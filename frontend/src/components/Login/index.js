@@ -11,11 +11,11 @@ const Login = ({ setIsAuthenticated, setIsRegistering }) => {
   const handleLogin = e => {
     e.preventDefault();
     let details = {
-      username : abhaID,
-      password : phoneNum
+      abhaID : abhaID? abhaID : null,
+      phoneNum : phoneNum? phoneNum : null
     }
     // send a post request with details to http://localhost:8090/author/login
-    axios.post("http://localhost:8090/author/login",details).then((response) => {
+    axios.post("http://localhost:8080/patient/login",details).then((response) => {
       console.log(response);
       if (response.data != null) {
         Swal.fire({

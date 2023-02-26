@@ -23,7 +23,7 @@ const Register = ({ setIsAuthenticated, setIsRegistering }) => {
       email : email
     }
     // send a post request with details to http://localhost:8090/author/Register
-    axios.post("http://localhost:3000/author/add",details).then((response) => {
+    axios.post("http://localhost:8080/patient/add",details).then((response) => {
       console.log(response);
       if (response.data != null) {
         Swal.fire({

@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class RegisterReponse {
-    String ehrbid;
-    String token;
+
+    private String token;
+    private String message;
 }

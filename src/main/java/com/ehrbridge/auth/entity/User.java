@@ -1,6 +1,7 @@
 package com.ehrbridge.auth.entity;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -59,9 +60,12 @@ public class User implements UserDetails{
 
     private Boolean verified;
 
+
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    private String Otp;
+    private Date otpValidity;
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         // returns a list of user roles
@@ -99,7 +103,7 @@ public class User implements UserDetails{
     @Override
     public boolean isEnabled() {
         // TODO: use is enabled for the verification step
-        return true;
+        return verified;
     }
 
 }

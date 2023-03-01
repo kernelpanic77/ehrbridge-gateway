@@ -9,6 +9,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class AuthResponse {
-    private String token;
+public class VerifyOtpResponse {
+        private String ehrbid;
+        private String token;
+
+        private String message;
 }

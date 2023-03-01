@@ -1,5 +1,8 @@
 package com.ehrbridge.auth.controller;
 
+import com.ehrbridge.auth.dto.*;
+import com.ehrbridge.auth.service.OtpService;
+import org.hibernate.cfg.CreateKeySecondPass;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -15,11 +18,11 @@ import com.ehrbridge.auth.service.AuthService;
 
 import lombok.RequiredArgsConstructor;
 
-import com.ehrbridge.auth.dto.AuthRequest;
-import com.ehrbridge.auth.dto.AuthResponse;
-import com.ehrbridge.auth.dto.RegisterReponse;
-import com.ehrbridge.auth.dto.RegisterRequest;
 import com.ehrbridge.auth.entity.User;
+import org.springframework.web.client.HttpClientErrorException;
+
+import javax.mail.MessagingException;
+import java.io.UnsupportedEncodingException;
 
 
 @RestController
@@ -28,17 +31,40 @@ import com.ehrbridge.auth.entity.User;
 public class UserController {
 
     @Autowired 
-    private AuthService service;
+    private AuthService authService;
+
+    @Autowired
+    private OtpService otpService;
 
     
     @PostMapping("/register/user")
-    public ResponseEntity<RegisterReponse> registerUser(@RequestBody RegisterRequest request){
-        return ResponseEntity.ok(service.register(request));
+    public ResponseEntity<RegisterReponse> registerUser(@RequestBody RegisterRequest request) throws MessagingException, UnsupportedEncodingException {
+        return ResponseEntity.ok(authService.register(request));
+    }
+
+    @PostMapping("/verifyOtp")
+    public ResponseEntity<VerifyOtpResponse> registerUser(@RequestBody VerifyOtpRequest request) throws MessagingException, UnsupportedEncodingException {
+        VerifyOtpResponse response = otpService.verifyOtp(request);
+
+        if(response.getMessage() == "OTP verification Successful")
+        {
+            return ResponseEntity.ok(authService.updateResponse(response));
+        }
+
+        return ResponseEntity.ok(response);
+
+
+
+
+
+
+//        return ResponseEntity.ok(otpService.verifyOtp(request));
+
     }
 
     @PostMapping("/signin/user")
     public ResponseEntity<AuthResponse> authenticateUser(@RequestBody AuthRequest request){
-        return ResponseEntity.ok(service.authenticate(request));
+        return ResponseEntity.ok(authService.authenticate(request));
     }
     
 }

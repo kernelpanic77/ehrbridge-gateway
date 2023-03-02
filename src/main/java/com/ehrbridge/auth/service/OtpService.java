@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.mail.*;
@@ -24,6 +25,9 @@ import java.util.Random;
 public class OtpService {
     @Autowired
     private final UserRepository userRepository;
+
+    @Autowired
+    private final PasswordEncoder passwordEncoder;
 
     public String generateOtp() {
         Random rnd = new Random();
@@ -78,11 +82,17 @@ public class OtpService {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("The email does not exist"));
 
-        if(user.getOtpValidity().after(new Date()))
+
+
+        if(user.getOtpValidity().before(new Date()))
         {
             return VerifyOtpResponse.builder().message("The OTP has expired please retry").build();
         }
-        if(user.getOtp().equals(request.getOtp()))
+        System.out.println(user.getOtp());
+        System.out.println(passwordEncoder.encode(request.getOtp()));
+        System.out.println(passwordEncoder.matches(request.getOtp(), user.getOtp()));
+
+        if(passwordEncoder.matches(request.getOtp(), user.getOtp()))
         {
             return VerifyOtpResponse.builder().message("OTP verification Successful").build();
         }

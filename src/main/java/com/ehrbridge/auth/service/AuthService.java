@@ -1,7 +1,6 @@
 package com.ehrbridge.auth.service;
 
 import com.ehrbridge.auth.dto.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -24,13 +23,10 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class AuthService {
 
-    @Autowired
     private final UserRepository userRepository;
 
-    @Autowired
     private final PasswordEncoder passwordEncoder;
 
-    @Autowired
     private final JwtService jwtService;
 
     private final AuthenticationManager authManager;
@@ -39,8 +35,8 @@ public class AuthService {
     
     public RegisterReponse register(RegisterRequest request) throws MessagingException, UnsupportedEncodingException {
         String otp = otpService.generateOtp();
-        System.out.println(otp);
         Date otpValidity = new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(5));
+        System.out.println(otpValidity);
         var user = User.builder()
                        .firstName(request.getFirstName())
                        .lastName(request.getLastName())
@@ -81,6 +77,11 @@ public class AuthService {
     {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         var user = userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("The email does not exist"));
+
+        user.setVerified(true);
+
+        userRepository.save(user);
+
 
         verifyOtpResponse.setEhrbid(user.getEhrbID());
         verifyOtpResponse.setToken(jwtService.generateToken(user));

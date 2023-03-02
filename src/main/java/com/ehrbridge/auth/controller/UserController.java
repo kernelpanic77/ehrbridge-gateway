@@ -4,6 +4,7 @@ import com.ehrbridge.auth.dto.*;
 import com.ehrbridge.auth.service.OtpService;
 import org.hibernate.cfg.CreateKeySecondPass;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -46,19 +47,13 @@ public class UserController {
     public ResponseEntity<VerifyOtpResponse> registerUser(@RequestBody VerifyOtpRequest request) throws MessagingException, UnsupportedEncodingException {
         VerifyOtpResponse response = otpService.verifyOtp(request);
 
-        if(response.getMessage() == "OTP verification Successful")
+        if(response.getMessage().equals("OTP verification Successful"))
         {
             return ResponseEntity.ok(authService.updateResponse(response));
         }
 
-        return ResponseEntity.ok(response);
+        return new ResponseEntity<VerifyOtpResponse>(response, HttpStatusCode.valueOf(403));
 
-
-
-
-
-
-//        return ResponseEntity.ok(otpService.verifyOtp(request));
 
     }
 

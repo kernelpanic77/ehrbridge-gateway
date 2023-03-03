@@ -62,13 +62,26 @@ public class AuthService {
         return RegisterReponse.builder().message("OTP sent Successfully").token(jwtToken).build();
     }
 
-    public AuthResponse authenticate(AuthRequest request) {
-        authManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+    public AuthResponse authenticate(AuthRequest request) throws UnsupportedEncodingException, MessagingException {
 
+        String otp = otpService.generateOtp();
+        Date otpValidity = new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(5));
         var user = userRepository.findByEmail(request.getEmail()).orElseThrow();
-        var jwtToken = jwtService.generateToken(user);
+        System.out.println(user.getEmail());
 
-        return AuthResponse.builder().token(jwtToken).build();
+        authManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+        System.out.println("check");
+        
+        user.setOtp(passwordEncoder.encode(otp));  
+        user.setOtpValidity(otpValidity);
+        otpService.sendEmail(otp, user);
+
+        userRepository.save(user);
+        
+        var jwtToken = jwtService.generateToken(user);
+        System.out.println("check");
+
+        return AuthResponse.builder().token(jwtToken).message("OTP sent Successfully").build();
 
     }
 

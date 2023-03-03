@@ -88,17 +88,18 @@ const Register = ({ setIsAuthenticated, setIsRegistering }) => {
   const handleRegister = e => {
     e.preventDefault();
     let details = {
-      fname : fname,
-      lname : lname,
-      phoneNum : phoneNum,
-      dob : dob,
+      firstName : fname,
+      lastName : lname,
+      phoneString : phoneNum,
+      password:"password",
       address : address,
-      email : email
+      emailAddress : email, 
+      gender: "M"
     }
     // send a post request with details to http://localhost:8090/author/Register
-    axios.post("http://localhost:8080/patient/add",details).then((response) => {
+    axios.post("http://localhost:8080/api/v1/auth/register/user",details).then((response) => {
       console.log(response);
-      if (response.data != null && isOtpVerified) {
+      if (response.data != null) {
         Swal.fire({
           timer: 1500,
           showConfirmButton: false,
@@ -165,7 +166,7 @@ const Register = ({ setIsAuthenticated, setIsRegistering }) => {
         <div style={{display:"flex", justifyContent:"space-between"}}>
         <input
           id="phoneNum"
-          type="tel"
+          type="text"
           name="phoneNum"
           placeholder="Phone Number"
           value={phoneNum} 

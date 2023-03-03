@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,6 +28,7 @@ import java.io.UnsupportedEncodingException;
 
 
 @RestController
+@CrossOrigin
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class UserController {
@@ -53,7 +55,7 @@ public class UserController {
     }
 
     @PostMapping("/signin/user")
-    public ResponseEntity<AuthResponse> authenticateUser(@RequestBody AuthRequest request) {
+    public ResponseEntity<AuthResponse> authenticateUser(@RequestBody AuthRequest request) throws UnsupportedEncodingException, MessagingException {
         return ResponseEntity.ok(authService.authenticate(request));
     }
 

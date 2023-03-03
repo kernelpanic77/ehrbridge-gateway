@@ -88,12 +88,12 @@ public class OtpService {
         {
             return VerifyOtpResponse.builder().message("The OTP has expired please retry").build();
         }
-        System.out.println(user.getOtp());
-        System.out.println(passwordEncoder.encode(request.getOtp()));
-        System.out.println(passwordEncoder.matches(request.getOtp(), user.getOtp()));
+
 
         if(passwordEncoder.matches(request.getOtp(), user.getOtp()))
         {
+            user.setOtpValidity(new Date());
+            userRepository.save(user);
             return VerifyOtpResponse.builder().message("OTP verification Successful").build();
         }
 

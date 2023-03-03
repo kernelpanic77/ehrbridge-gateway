@@ -32,24 +32,25 @@ public class AuthService {
     private final AuthenticationManager authManager;
 
     private final OtpService otpService;
-    
+
     public RegisterReponse register(RegisterRequest request) throws MessagingException, UnsupportedEncodingException {
         String otp = otpService.generateOtp();
         Date otpValidity = new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(5));
         System.out.println(otpValidity);
-        var user = User.builder()
-                       .firstName(request.getFirstName())
-                       .lastName(request.getLastName())
-                       .email(request.getEmailAddress())
-                       .password(passwordEncoder.encode(request.getPassword()))
-                       .address(request.getAddress())
-                       .gender(request.getGender())
-                       .phoneString(request.getPhoneString())
-                       .verified(false)
-                       .Otp(passwordEncoder.encode(otp))
-                       .otpValidity(otpValidity)
-                       .role(Role.USER)
-                       .build();
+        var user = User
+                .builder()
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
+                .email(request.getEmailAddress())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .address(request.getAddress())
+                .gender(request.getGender())
+                .phoneString(request.getPhoneString())
+                .verified(false)
+                .Otp(passwordEncoder.encode(otp))
+                .otpValidity(otpValidity)
+                .role(Role.USER)
+                .build();
 
         userRepository.save(user);
 
@@ -62,9 +63,7 @@ public class AuthService {
     }
 
     public AuthResponse authenticate(AuthRequest request) {
-        authManager.authenticate(
-            new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()) 
-        );
+        authManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
 
         var user = userRepository.findByEmail(request.getEmail()).orElseThrow();
         var jwtToken = jwtService.generateToken(user);
@@ -73,8 +72,7 @@ public class AuthService {
 
     }
 
-    public VerifyOtpResponse updateResponse(VerifyOtpResponse verifyOtpResponse)
-    {
+    public VerifyOtpResponse updateResponse(VerifyOtpResponse verifyOtpResponse) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         var user = userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("The email does not exist"));
 
@@ -88,5 +86,5 @@ public class AuthService {
 
         return verifyOtpResponse;
     }
-        
+
 }

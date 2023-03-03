@@ -31,13 +31,13 @@ import java.io.UnsupportedEncodingException;
 @RequiredArgsConstructor
 public class UserController {
 
-    @Autowired 
+    @Autowired
     private AuthService authService;
 
     @Autowired
     private OtpService otpService;
 
-    
+
     @PostMapping("/register/user")
     public ResponseEntity<RegisterReponse> registerUser(@RequestBody RegisterRequest request) throws MessagingException, UnsupportedEncodingException {
         return ResponseEntity.ok(authService.register(request));
@@ -46,20 +46,15 @@ public class UserController {
     @PostMapping("/verifyOtp")
     public ResponseEntity<VerifyOtpResponse> registerUser(@RequestBody VerifyOtpRequest request) throws MessagingException, UnsupportedEncodingException {
         VerifyOtpResponse response = otpService.verifyOtp(request);
-
-        if(response.getMessage().equals("OTP verification Successful"))
-        {
+        if (response.getMessage().equals("OTP verification Successful")) {
             return ResponseEntity.ok(authService.updateResponse(response));
         }
-
         return new ResponseEntity<VerifyOtpResponse>(response, HttpStatusCode.valueOf(403));
-
-
     }
 
     @PostMapping("/signin/user")
-    public ResponseEntity<AuthResponse> authenticateUser(@RequestBody AuthRequest request){
+    public ResponseEntity<AuthResponse> authenticateUser(@RequestBody AuthRequest request) {
         return ResponseEntity.ok(authService.authenticate(request));
     }
-    
+
 }

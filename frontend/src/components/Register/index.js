@@ -11,6 +11,79 @@ const Register = ({ setIsAuthenticated, setIsRegistering }) => {
   const [dob, setDob] = useState('');
   const [address, setAddress] = useState('');
   const [email, setEmail] = useState('');
+  const [otp, setOtp] = useState();
+  const [isOtpRecieved, setIsOtpRecieved] = useState(false);
+  const [recievedOTP, setRecievedOTP] = useState();
+  const [isOtpVerified, setIsOtpVerified] = useState(false);
+
+  const handleRecieveOTP = e => {
+    e.preventDefault();
+    setIsOtpRecieved(true);
+    // TODO: @Pranav, update details and axios request type, link
+    let details = {
+    }
+    axios.post("http://localhost:8080/patient/otp",details).then((response) => {
+      console.log(response);
+      if (response.data != null) {
+       setRecievedOTP(response.data); // set recievedOTP to the otp patient recieves 
+      } else {
+        Swal.fire({
+          timer: 1500,
+          showConfirmButton: false,
+          willOpen: () => {
+            Swal.showLoading();
+          },
+          willClose: () => {
+            Swal.fire({
+              icon: 'error',
+              title: 'Error!',
+              text: 'OTP Not Recieved',
+              showConfirmButton: true,
+            });
+          },
+        });
+      }
+    });
+  }
+  const handleVerifyOTP = e => {
+    e.preventDefault();
+    if(otp == recievedOTP){
+      setIsOtpVerified(true);
+      Swal.fire({
+        timer: 1500,
+        showConfirmButton: false,
+        willOpen: () => {
+          Swal.showLoading();
+        },
+        willClose: () => {
+          Swal.fire({
+            icon: 'success',
+            title: 'OTP Verified',
+            showConfirmButton: true,
+          });
+        },
+      });
+    }
+    else{
+      Swal.fire({
+        timer: 1500,
+        showConfirmButton: false,
+        willOpen: () => {
+          Swal.showLoading();
+        },
+        willClose: () => {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: 'Incorrect OTP',
+            showConfirmButton: true,
+          });
+        },
+      });
+    }
+
+    // TODO: @Pranav, 
+  }
 
   const handleRegister = e => {
     e.preventDefault();
@@ -25,7 +98,7 @@ const Register = ({ setIsAuthenticated, setIsRegistering }) => {
     // send a post request with details to http://localhost:8090/author/Register
     axios.post("http://localhost:8080/patient/add",details).then((response) => {
       console.log(response);
-      if (response.data != null) {
+      if (response.data != null && isOtpVerified) {
         Swal.fire({
           timer: 1500,
           showConfirmButton: false,
@@ -127,6 +200,32 @@ const Register = ({ setIsAuthenticated, setIsRegistering }) => {
           onChange={e => setAddress(e.target.value)}
           style={{marginRight:"20px"}}
         />
+                <div style={{display:"flex", justifyContent:"space-between"}}>
+        <input
+          id="phoneNum"
+          type="number"
+          name="phoneNum"
+          placeholder="Enter OTP"
+          value={otp} 
+          onChange={e => setOtp(e.target.value)}
+          style={{marginRight:"20px"}}
+        />
+        {!isOtpRecieved ? 
+                <input
+            className="button"
+            type="button"
+            value="Receive OTP"
+            onClick={handleRecieveOTP}
+          />  : 
+          <input
+            className="button"
+            type="button"
+            value="Verify OTP"
+            onClick={handleVerifyOTP}
+          />}
+
+          
+        </div>
         <input style={{ marginTop: '12px' }} type="submit" value="Register" />
       </form>
       <label for = "login">Already have an account?</label>

@@ -1,8 +1,14 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 
 import Logout from '../Logout';
 
 const Header = ({ setIsAdding, setIsAuthenticated, setIsGeneratingPaper }) => {
+  const [abhaID, setAbhaID] = useState("p1");
+
+  useEffect(() => {
+    setAbhaID(JSON.parse(localStorage.getItem('abha_id')));
+  }, []);
+  
   return (
     <header>
       <h1>Patient Dashboard</h1>
@@ -11,6 +17,7 @@ const Header = ({ setIsAdding, setIsAuthenticated, setIsGeneratingPaper }) => {
         {/* <button style ={{marginLeft:'10px'}} onClick={() => setIsGeneratingPaper(true)}>Generate Consent</button> */}
         <button onClick={() => setIsAdding(true)}>View Health Records</button>
         <button onClick={() => setIsAdding(true)}>View Consent Requests</button>
+        <button className="muted-button" disabled>ABHA ID: {abhaID}</button>
         <Logout setIsAuthenticated={setIsAuthenticated} />
       </div>
     </header>

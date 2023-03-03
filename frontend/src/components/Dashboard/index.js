@@ -10,13 +10,14 @@ const Dashboard = ({ setIsAuthenticated }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isViewing, setIsViewing] = useState(false);
   const [isGeneratingPaper, setIsGeneratingPaper] = useState(false);
-  useEffect(() => {
-    const authorId = JSON.parse(localStorage.getItem('author_id'));
-    console.log("useEffect");
-    axios.get("http://localhost:8090/item/author/"+authorId).then((response) => {
-      setQuestions(response.data);
-    });
-  }, []);
+  
+  // useEffect(() => {
+  //   const authorId = JSON.parse(localStorage.getItem('author_id'));
+  //   console.log("useEffect");
+  //   axios.get("http://localhost:8090/item/author/"+authorId).then((response) => {
+  //     setQuestions(response.data);
+  //   });
+  // }, []);
 
   const handleView = (id,version) => {
     const [question] = questions.filter(question => question.id === id && question.version == version);

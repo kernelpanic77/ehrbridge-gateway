@@ -70,7 +70,6 @@ public class AuthService {
         System.out.println(user.getEmail());
 
         authManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
-        System.out.println("check");
         
         user.setOtp(passwordEncoder.encode(otp));  
         user.setOtpValidity(otpValidity);
@@ -79,7 +78,6 @@ public class AuthService {
         userRepository.save(user);
         
         var jwtToken = jwtService.generateToken(user);
-        System.out.println("check");
 
         return AuthResponse.builder().token(jwtToken).message("OTP sent Successfully").build();
 

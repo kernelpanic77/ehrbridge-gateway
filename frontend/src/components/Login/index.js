@@ -18,7 +18,7 @@ const Login = ({ setIsAuthenticated, setIsRegistering }) => {
     
 
       const config = {
-        headers: { Authorization: `Bearer ${JSON.parse(localStorage.getItem('token'))}` }
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       };
 
       const bodyParameters = {
@@ -38,7 +38,7 @@ const Login = ({ setIsAuthenticated, setIsRegistering }) => {
           willClose: () => {
             localStorage.setItem('token', response.data.token)
             localStorage.setItem('is_authenticated', true);
-            localStorage.setItem('abha_id', response.data.abha_id);
+            localStorage.setItem('abha_id', response.data.ehrbid);
             setIsAuthenticated(true);
   
             Swal.fire({
@@ -73,8 +73,8 @@ const Login = ({ setIsAuthenticated, setIsRegistering }) => {
   const handleLogin = e => {
     e.preventDefault();
     let details = {
-      emailAddress : email, 
-      password:"password",
+      email : email, 
+      password: password,
     }
     // send a post request with details to http://localhost:8090/author/Register
     axios.post("http://localhost:8080/api/v1/auth/signin/user",details).then((response) => {

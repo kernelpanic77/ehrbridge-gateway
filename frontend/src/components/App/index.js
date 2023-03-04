@@ -9,7 +9,7 @@ const App = () => {
   const [isRegistering, setIsRegistering] = useState(true);
 
   useEffect(() => {
-    setIsAuthenticated(JSON.parse(localStorage.getItem('is_authenticated')));
+    setIsAuthenticated(localStorage.getItem('is_authenticated'));
   }, []);
 
   return (

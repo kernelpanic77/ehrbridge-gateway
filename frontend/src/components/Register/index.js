@@ -22,7 +22,7 @@ const Register = ({ setIsAuthenticated, setIsRegistering }) => {
     
 
       const config = {
-        headers: { Authorization: `Bearer ${JSON.parse(localStorage.getItem('token'))}` }
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       };
 
       const bodyParameters = {
@@ -42,7 +42,7 @@ const Register = ({ setIsAuthenticated, setIsRegistering }) => {
           willClose: () => {
             localStorage.setItem('token', response.data.token)
             localStorage.setItem('is_authenticated', true);
-            localStorage.setItem('abha_id', response.data.abha_id);
+            localStorage.setItem('abha_id', response.data.ehrbid);
             setIsAuthenticated(true);
   
             Swal.fire({

@@ -6,7 +6,7 @@ const Header = ({ setIsAdding, setIsAuthenticated, setIsGeneratingPaper }) => {
   const [abhaID, setAbhaID] = useState("p1");
 
   useEffect(() => {
-    setAbhaID(JSON.parse(localStorage.getItem('abha_id')));
+    setAbhaID(localStorage.getItem('abha_id'));
   }, []);
   
   return (

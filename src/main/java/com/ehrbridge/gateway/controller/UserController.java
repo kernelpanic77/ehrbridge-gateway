@@ -1,6 +1,8 @@
 package com.ehrbridge.gateway.controller;
 
 import com.ehrbridge.gateway.dto.auth.*;
+import com.ehrbridge.gateway.dto.auth.doctor.DoctorRegisterRequest;
+import com.ehrbridge.gateway.dto.auth.doctor.DoctorRegisterResponse;
 import com.ehrbridge.gateway.service.OtpService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
@@ -52,5 +54,8 @@ public class UserController {
     }
 
 
-
+    @PostMapping("/register/doctor")
+    public ResponseEntity<DoctorRegisterResponse> registerDoctor(@RequestBody DoctorRegisterRequest request){
+        return ResponseEntity.ok(authService.registerDoctor(request));
+    }
 }

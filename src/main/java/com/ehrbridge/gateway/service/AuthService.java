@@ -1,6 +1,9 @@
 package com.ehrbridge.gateway.service;
 
 import com.ehrbridge.gateway.dto.auth.*;
+import com.ehrbridge.gateway.dto.auth.doctor.DoctorRegisterRequest;
+import com.ehrbridge.gateway.dto.auth.doctor.DoctorRegisterResponse;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -8,8 +11,10 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.ehrbridge.gateway.entity.Doctor;
 import com.ehrbridge.gateway.entity.Role;
 import com.ehrbridge.gateway.entity.User;
+import com.ehrbridge.gateway.repository.DoctorRepository;
 import com.ehrbridge.gateway.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -24,6 +29,8 @@ import java.util.concurrent.TimeUnit;
 public class AuthService {
 
     private final UserRepository userRepository;
+
+    private final DoctorRepository doctorRepository;
 
     private final PasswordEncoder passwordEncoder;
 
@@ -109,5 +116,26 @@ public class AuthService {
 
         return AuthPatientServerResponse.builder().user(user).token(jwtToken).message("Patient Authenticated").build();
     }
+
+    public DoctorRegisterResponse registerDoctor(DoctorRegisterRequest request){
+        var doctor = Doctor.builder()
+                            .address(request.getAddress())
+                            .department(request.getDepartment())
+                            .gender(request.getGender())
+                            .firstName(request.getFirstName())
+                            .lastName(request.getLastName())
+                            .email(request.getEmailAddress())
+                            .build();
+        try {
+            Doctor savedDoctor = doctorRepository.save(doctor);
+            return DoctorRegisterResponse.builder().msg("doctor registration successful!").doctorEhrbID(savedDoctor.getEhrbID()).build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            
+        }
+        
+        return DoctorRegisterResponse.builder().msg("doctor registration failed!").build();
+
+    }   
 
 }

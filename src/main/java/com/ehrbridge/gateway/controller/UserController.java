@@ -1,27 +1,19 @@
 package com.ehrbridge.gateway.controller;
 
-import com.ehrbridge.gateway.dto.*;
+import com.ehrbridge.gateway.dto.auth.*;
 import com.ehrbridge.gateway.service.OtpService;
-import org.hibernate.cfg.CreateKeySecondPass;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ehrbridge.gateway.repository.UserRepository;
 import com.ehrbridge.gateway.service.AuthService;
 
 import lombok.RequiredArgsConstructor;
-
-import com.ehrbridge.gateway.entity.User;
-import org.springframework.web.client.HttpClientErrorException;
 
 import javax.mail.MessagingException;
 import java.io.UnsupportedEncodingException;
@@ -59,9 +51,6 @@ public class UserController {
         return ResponseEntity.ok(authService.authenticate(request));
     }
 
-    @PostMapping("/signin/patient")
-    public ResponseEntity<AuthPatientServerResponse> authenticatePatient(@RequestBody AuthRequest request){
-        return ResponseEntity.ok(authService.authenticatePatient(request));
-    }
+
 
 }

@@ -1,4 +1,4 @@
-package com.ehrbridge.gateway.dto;
+package com.ehrbridge.gateway.dto.ConsentManager;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,9 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class VerifyOtpResponse {
-        private String ehrbid;
-        private String token;
-
-        private String message;
+public class HookConsentObjectResponse {
+    private String message;
 }

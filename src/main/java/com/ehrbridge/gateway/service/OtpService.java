@@ -1,7 +1,7 @@
 package com.ehrbridge.gateway.service;
 
-import com.ehrbridge.gateway.dto.VerifyOtpRequest;
-import com.ehrbridge.gateway.dto.VerifyOtpResponse;
+import com.ehrbridge.gateway.dto.auth.VerifyOtpRequest;
+import com.ehrbridge.gateway.dto.auth.VerifyOtpResponse;
 import com.ehrbridge.gateway.entity.User;
 import com.ehrbridge.gateway.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +16,6 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import java.io.UnsupportedEncodingException;
 import java.util.Date;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.Random;
 

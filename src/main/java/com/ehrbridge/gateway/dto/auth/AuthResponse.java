@@ -1,6 +1,4 @@
-package com.ehrbridge.gateway.dto;
-
-import org.springframework.security.core.userdetails.UserDetails;
+package com.ehrbridge.gateway.dto.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,8 +9,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class AuthPatientServerResponse {
-    private UserDetails user;
+public class AuthResponse {
+    private String ehrbID;
     private String token;
     private String message;
 }

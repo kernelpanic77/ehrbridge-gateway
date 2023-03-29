@@ -1,4 +1,4 @@
-package com.ehrbridge.gateway.dto;
+package com.ehrbridge.gateway.dto.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class VerifyOtpRequest {
+public class RegisterReponse {
 
     private String token;
-    private String otp;
+    private String message;
 }

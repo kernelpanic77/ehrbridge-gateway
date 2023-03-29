@@ -2,9 +2,11 @@ package com.ehrbridge.gateway.config;
 
 import java.io.IOException;
 
+import com.ehrbridge.gateway.service.ApiKeyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -28,6 +30,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     
     @Autowired
     private final JwtService jwtService;
+
+    @Autowired
+    private final ApiKeyService apiKeyService;
     
     @Autowired
     private final UserDetailsServiceImpl userDetailsService;
@@ -59,7 +64,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     
     private String parseJwt(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
-    
+
         if (StringUtils.hasText(authHeader) && authHeader.startsWith("Bearer ")) {
           return authHeader.substring(7, authHeader.length());
         }

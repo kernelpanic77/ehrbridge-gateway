@@ -51,6 +51,11 @@ public class UserController {
         return ResponseEntity.ok(authService.authenticate(request));
     }
 
-
+    @PostMapping("/register/hospital")
+    public ResponseEntity<HospitalRegisterResponse> registerHospital(@RequestBody HospitalRegisterRequest request)
+    {
+        
+        return ResponseEntity.ok(authService.registerHospital(request));
+    }
 
 }

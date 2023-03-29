@@ -13,4 +13,5 @@ import org.springframework.http.HttpStatusCode;
 public class GenerateConsentResponse {
     private String txn_id;
     private String status;
+    private String message;
 }

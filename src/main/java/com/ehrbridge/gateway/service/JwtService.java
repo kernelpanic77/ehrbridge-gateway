@@ -1,4 +1,4 @@
-package com.ehrbridge.auth.service;
+package com.ehrbridge.gateway.service;
 
 import org.springframework.stereotype.Service;
 

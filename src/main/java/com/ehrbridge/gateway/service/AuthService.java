@@ -1,6 +1,6 @@
-package com.ehrbridge.auth.service;
+package com.ehrbridge.gateway.service;
 
-import com.ehrbridge.auth.dto.*;
+import com.ehrbridge.gateway.dto.*;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -8,9 +8,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.ehrbridge.auth.entity.Role;
-import com.ehrbridge.auth.entity.User;
-import com.ehrbridge.auth.repository.UserRepository;
+import com.ehrbridge.gateway.entity.Role;
+import com.ehrbridge.gateway.entity.User;
+import com.ehrbridge.gateway.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -79,7 +79,7 @@ public class AuthService {
         
         var jwtToken = jwtService.generateToken(user);
 
-        return AuthResponse.builder().token(jwtToken).message("OTP sent Successfully").build();
+        return AuthResponse.builder().token(jwtToken).ehrbID(user.getEhrbID()).message("OTP sent Successfully").build();
 
     }
 
@@ -96,6 +96,18 @@ public class AuthService {
         verifyOtpResponse.setToken(jwtService.generateToken(user));
 
         return verifyOtpResponse;
+    }
+
+    public AuthPatientServerResponse authenticatePatient(AuthRequest request) {
+        var user = userRepository.findByEmail(request.getEmail()).orElseThrow();
+
+        authManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+
+        userRepository.save(user);
+        
+        var jwtToken = jwtService.generateToken(user);
+
+        return AuthPatientServerResponse.builder().user(user).token(jwtToken).message("Patient Authenticated").build();
     }
 
 }

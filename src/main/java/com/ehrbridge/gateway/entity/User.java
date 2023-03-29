@@ -1,4 +1,4 @@
-package com.ehrbridge.auth.entity;
+package com.ehrbridge.gateway.entity;
 
 import java.util.Collection;
 import java.util.Date;

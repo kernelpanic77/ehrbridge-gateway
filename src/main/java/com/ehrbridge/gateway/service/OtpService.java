@@ -1,9 +1,9 @@
-package com.ehrbridge.auth.service;
+package com.ehrbridge.gateway.service;
 
-import com.ehrbridge.auth.dto.VerifyOtpRequest;
-import com.ehrbridge.auth.dto.VerifyOtpResponse;
-import com.ehrbridge.auth.entity.User;
-import com.ehrbridge.auth.repository.UserRepository;
+import com.ehrbridge.gateway.dto.VerifyOtpRequest;
+import com.ehrbridge.gateway.dto.VerifyOtpResponse;
+import com.ehrbridge.gateway.entity.User;
+import com.ehrbridge.gateway.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;

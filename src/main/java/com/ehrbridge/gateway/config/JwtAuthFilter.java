@@ -1,4 +1,4 @@
-package com.ehrbridge.auth.config;
+package com.ehrbridge.gateway.config;
 
 import java.io.IOException;
 
@@ -12,8 +12,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.ehrbridge.auth.service.JwtService;
-import com.ehrbridge.auth.service.UserDetailsServiceImpl;
+import com.ehrbridge.gateway.service.JwtService;
+import com.ehrbridge.gateway.service.UserDetailsServiceImpl;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

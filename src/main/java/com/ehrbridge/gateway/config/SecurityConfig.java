@@ -1,6 +1,6 @@
-package com.ehrbridge.auth.config;
+package com.ehrbridge.gateway.config;
 
-import com.ehrbridge.auth.service.UserDetailsServiceImpl;
+import com.ehrbridge.gateway.service.UserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;

@@ -1,4 +1,4 @@
-package com.ehrbridge.auth.entity;
+package com.ehrbridge.gateway.entity;
 
 public enum Role {
     USER, 

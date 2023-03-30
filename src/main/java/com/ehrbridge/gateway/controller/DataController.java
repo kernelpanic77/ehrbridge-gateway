@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -24,7 +25,7 @@ public class DataController {
     private final DataService dataService;
 
     @PostMapping("/request")
-    public ResponseEntity<DataResponse> getDataReqFromHIU(@RequestBody DataRequest request){
-        return ResponseEntity.ok(dataService.forwardDataReqToHIP(request));
+    public ResponseEntity<DataResponse> getDataReqFromHIU(@RequestBody DataRequest request, @RequestHeader(value="api_key", required=true) String api_key){
+        return ResponseEntity.ok(dataService.forwardDataReqToHIP(request, api_key));
     }
 }

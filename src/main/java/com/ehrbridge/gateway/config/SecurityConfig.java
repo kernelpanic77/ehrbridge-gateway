@@ -43,7 +43,7 @@ public class SecurityConfig {
                 .cors()
                 .disable()
                 .authorizeHttpRequests()
-                .requestMatchers("/api/v1/auth/**", "/api/v1/consent/**")
+                .requestMatchers("/api/v1/auth/**", "/api/v1/consent/**", "/api/v1/data/**")
                 .permitAll()
                 .anyRequest()
                 .authenticated()

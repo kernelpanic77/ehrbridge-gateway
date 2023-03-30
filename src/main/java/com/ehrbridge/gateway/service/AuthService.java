@@ -17,7 +17,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.keygen.StringKeyGenerator;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -31,8 +30,6 @@ import com.ehrbridge.gateway.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
-import javax.mail.MessagingException;
-import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
@@ -44,28 +41,16 @@ public class AuthService {
     private final UserRepository userRepository;
     private final HospitalRepository hospitalRepository;
     private final HospitalKeysRepository hospitalKeysRepository;
-
     private final DoctorRepository doctorRepository;
-
     private final PasswordEncoder passwordEncoder;
-
     private final JwtService jwtService;
-
     private final AuthenticationManager authManager;
-
     private final OtpService otpService;
 
 
     public ResponseEntity<RegisterReponse> register(RegisterRequest request) {
         String otp = otpService.generateOtp();
         Date otpValidity = new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(5));
-
-        try {
-            var user = userRepository.findByEmail(request.getEmailAddress()).orElseThrow();
-            return new ResponseEntity<RegisterReponse>(RegisterReponse.builder().message("User Already exists").build(), HttpStatusCode.valueOf(400));
-        } catch (NoSuchElementException e) {
-
-        }
 
 
         var user = User
@@ -83,8 +68,11 @@ public class AuthService {
                 .role(Role.USER)
                 .build();
 
-        userRepository.save(user);
-
+        try {
+            userRepository.save(user);
+        } catch (NoSuchElementException e) {
+            return new ResponseEntity<RegisterReponse>(RegisterReponse.builder().message("User Already exists").build(), HttpStatusCode.valueOf(400));
+        }
 
         try {
             otpService.sendEmail(otp, user);
@@ -92,61 +80,41 @@ public class AuthService {
             return new ResponseEntity<RegisterReponse>(RegisterReponse.builder().message("Unable to send OTP").build(), HttpStatusCode.valueOf(500));
         }
 
-
         var jwtToken = jwtService.generateToken(user);
 
         return new ResponseEntity<RegisterReponse>(RegisterReponse.builder().message("OTP sent Successfully").token(jwtToken).build(), HttpStatusCode.valueOf(200));
     }
 
-    public AuthResponse authenticate(AuthRequest request) throws UnsupportedEncodingException, MessagingException {
+    public ResponseEntity<AuthResponse> authenticate(AuthRequest request)  {
 
         String otp = otpService.generateOtp();
         Date otpValidity = new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(5));
         var user = userRepository.findByEmail(request.getEmail()).orElseThrow();
-        System.out.println(user.getEmail());
 
-        authManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+        try{
+            authManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+        }catch(Exception e){
+            return new ResponseEntity<AuthResponse>(AuthResponse.builder().message("Login Failed").build(), HttpStatusCode.valueOf(403));
+        }
         
         user.setOtp(passwordEncoder.encode(otp));  
         user.setOtpValidity(otpValidity);
-        otpService.sendEmail(otp, user);
+
+        try {
+            otpService.sendEmail(otp, user);
+        } catch (Exception e) {
+            return new ResponseEntity<AuthResponse>(AuthResponse.builder().message("Unable to send OTP").build(), HttpStatusCode.valueOf(500));
+        }
 
         userRepository.save(user);
         
         var jwtToken = jwtService.generateToken(user);
 
-        return AuthResponse.builder().token(jwtToken).ehrbID(user.getEhrbID()).message("OTP sent Successfully").build();
+        return new ResponseEntity<AuthResponse>(AuthResponse.builder().token(jwtToken).ehrbID(user.getEhrbID()).message("OTP sent Successfully").build(), HttpStatusCode.valueOf(200));
 
     }
 
-    public VerifyOtpResponse updateResponse(VerifyOtpResponse verifyOtpResponse) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        var user = userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("The email does not exist"));
-
-        user.setVerified(true);
-
-        userRepository.save(user);
-
-
-        verifyOtpResponse.setEhrbid(user.getEhrbID());
-        verifyOtpResponse.setToken(jwtService.generateToken(user));
-
-        return verifyOtpResponse;
-    }
-
-    public AuthPatientServerResponse authenticatePatient(AuthRequest request) {
-        var user = userRepository.findByEmail(request.getEmail()).orElseThrow();
-
-        authManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
-
-        userRepository.save(user);
-        
-        var jwtToken = jwtService.generateToken(user);
-
-        return AuthPatientServerResponse.builder().user(user).token(jwtToken).message("Patient Authenticated").build();
-    }
-
-    public DoctorRegisterResponse registerDoctor(DoctorRegisterRequest request){
+    public ResponseEntity<DoctorRegisterResponse> registerDoctor(DoctorRegisterRequest request){
         var doctor = Doctor.builder()
                             .address(request.getAddress())
                             .department(request.getDepartment())
@@ -156,17 +124,14 @@ public class AuthService {
                             .email(request.getEmailAddress())
                             .build();
         try {
-            Doctor savedDoctor = doctorRepository.save(doctor);
-            return DoctorRegisterResponse.builder().msg("doctor registration successful!").doctorEhrbID(savedDoctor.getEhrbID()).build();
+            doctorRepository.save(doctor);
         } catch (Exception e) {
-            e.printStackTrace();
-            
+            return new ResponseEntity<DoctorRegisterResponse>(DoctorRegisterResponse.builder().message("Doctor with the email Already exists").build(), HttpStatusCode.valueOf(400));
         }
-        
-        return DoctorRegisterResponse.builder().msg("doctor registration failed!").build();
+        return new ResponseEntity<DoctorRegisterResponse>(DoctorRegisterResponse.builder().doctorEhrbID(doctor.getEhrbID()).message("Registration Successful").build(), HttpStatusCode.valueOf(200));
 
     }
-    public HospitalRegisterResponse registerHospital(HospitalRegisterRequest request) {
+    public ResponseEntity<HospitalRegisterResponse> registerHospital(HospitalRegisterRequest request) {
         var hospital = Hospital
                 .builder()
                 .hospitalName(request.getHospitalName())
@@ -177,7 +142,14 @@ public class AuthService {
                 .hook_url(request.getHook_url())
                 .build();
 
-        hospitalRepository.save(hospital);
+        try
+        {
+            hospitalRepository.save(hospital);
+        }
+        catch(Exception e){
+            return new 
+        }
+
 
         String apiKey =  RandGeneratedStr(32);
 

@@ -46,19 +46,19 @@ public class UserController {
 
     @PostMapping("/signin/user")
     public ResponseEntity<AuthResponse> authenticateUser(@RequestBody AuthRequest request) throws UnsupportedEncodingException, MessagingException {
-        return ResponseEntity.ok(authService.authenticate(request));
+        return authService.authenticate(request);
     }
 
 
     @PostMapping("/register/doctor")
     public ResponseEntity<DoctorRegisterResponse> registerDoctor(@RequestBody DoctorRegisterRequest request){
-        return ResponseEntity.ok(authService.registerDoctor(request));
+        return authService.registerDoctor(request);
     }
 
     @PostMapping("/register/hospital")
     public ResponseEntity<HospitalRegisterResponse> registerHospital(@RequestBody HospitalRegisterRequest request)
     {
-        return ResponseEntity.ok(authService.registerHospital(request));
+        return authService.registerHospital(request);
     }
 
 

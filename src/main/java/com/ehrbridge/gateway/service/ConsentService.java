@@ -33,48 +33,63 @@ public class ConsentService {
 
     @Autowired
     private HttpHeaders headers;
+    private final ApiKeyService apiKeyService;
 
     @Autowired
     private RestTemplate rest;
-    public GenerateConsentResponse generateConsent(GenerateConsentRequest request)
+    public GenerateConsentResponse generateConsent(GenerateConsentRequest request, String api_key)
     {
         String hiuId = request.getConsent_object().getHiuID();
         String hipId = request.getConsent_object().getHipID();
         String doctorId = request.getConsent_object().getDoctorID();
 
-        var transaction = Transactions.builder()
-                .txn_status("PENDING")
-                .hiuId(hiuId)
-                .hipId(hipId)
-                .doctorId(doctorId)
-                .build();
-
-        transactionRepository.save(transaction);
-        var txnId = transaction.getTxnId();
-        //TODO: Check iff HIP, HIU, Doctir iare valid and id's exist in the registry.
-        //TODO: Get Original names from repository using id's.
-        var requestDetails = RequestDetails.builder()
-                .hipName("hip")
-                .hiuName("hiu")
-                .doctorName("doctor")
-                .build();
-        var consentManagerRequest = ConsentManagerRequest.builder()
-                .txnId(txnId)
-                .requestDetails(requestDetails)
-                .consentObjectRequest(request.getConsent_object())
-                .build();
-
-        ResponseEntity<ConsentManagerResponse> consentManagerResponse = pushConsentObjectToGateway(consentManagerRequest);
-        if(consentManagerResponse == null)
+        if(!apiKeyService.validateApiKey(api_key))
         {
-            transaction.setTxn_status("FAILED");
+            return GenerateConsentResponse.builder().message("API Key expired, please generate a new one").status("FAILED").build();
+        }
+        System.out.println(hiuId);
+        System.out.println(apiKeyService.getHospitalIdfromApiKey(api_key));
+        if(apiKeyService.getHospitalIdfromApiKey(api_key).equals(hiuId))
+        {
+            var transaction = Transactions.builder()
+                    .txn_status("PENDING")
+                    .hiuId(hiuId)
+                    .hipId(hipId)
+                    .doctorId(doctorId)
+                    .build();
+
             transactionRepository.save(transaction);
-            return GenerateConsentResponse.builder().txn_id(txnId).status("FAILED").build();
+            var txnId = transaction.getTxnId();
+            //TODO: Check iff HIP, HIU, Doctir iare valid and id's exist in the registry.
+            //TODO: Get Original names from repository using id's.
+            var requestDetails = RequestDetails.builder()
+                    .hipName("hip")
+                    .hiuName("hiu")
+                    .doctorName("doctor")
+                    .build();
+            var consentManagerRequest = ConsentManagerRequest.builder()
+                    .txnId(txnId)
+                    .requestDetails(requestDetails)
+                    .consentObjectRequest(request.getConsent_object())
+                    .build();
+
+            ResponseEntity<ConsentManagerResponse> consentManagerResponse = pushConsentObjectToGateway(consentManagerRequest);
+            if(consentManagerResponse == null)
+            {
+                transaction.setTxn_status("FAILED");
+                transactionRepository.save(transaction);
+                return GenerateConsentResponse.builder().txn_id(txnId).status("FAILED").build();
+            }
+            else
+            {
+                return GenerateConsentResponse.builder().txn_id(txnId).status("PENDING").build();
+            }
         }
         else
         {
-            return GenerateConsentResponse.builder().txn_id(txnId).status("PENDING").build();
+            return GenerateConsentResponse.builder().message("Please enter a valid API KEY").status("FAILED").build();
         }
+
 
     }
 

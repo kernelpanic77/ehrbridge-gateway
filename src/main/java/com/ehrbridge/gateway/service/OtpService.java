@@ -6,6 +6,8 @@ import com.ehrbridge.gateway.entity.User;
 import com.ehrbridge.gateway.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -72,20 +74,18 @@ public class OtpService {
 //        System.out.println(otp);
     }
 
-    public VerifyOtpResponse verifyOtp(VerifyOtpRequest request)
+    public ResponseEntity<VerifyOtpResponse> verifyOtp(VerifyOtpRequest request)
     {
         if(SecurityContextHolder.getContext().getAuthentication() == null)
         {
-            return VerifyOtpResponse.builder().message("The user does not exist").build();
+            return new ResponseEntity<VerifyOtpResponse>(VerifyOtpResponse.builder().message("The user does not exist").build(), HttpStatusCode.valueOf(403));
         }
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("The email does not exist"));
 
-
-
         if(user.getOtpValidity().before(new Date()))
         {
-            return VerifyOtpResponse.builder().message("The OTP has expired please retry").build();
+            return new ResponseEntity<VerifyOtpResponse>(VerifyOtpResponse.builder().message("The OTP has expired please retry").build(), HttpStatusCode.valueOf(402));
         }
 
 
@@ -93,10 +93,10 @@ public class OtpService {
         {
             user.setOtpValidity(new Date());
             userRepository.save(user);
-            return VerifyOtpResponse.builder().message("OTP verification Successful").build();
+            return new ResponseEntity<VerifyOtpResponse>(VerifyOtpResponse.builder().message("OTP verification Successful").build(), HttpStatusCode.valueOf(200));
         }
 
-        return VerifyOtpResponse.builder().message("Incorrect OTP").build();
+        return new ResponseEntity<VerifyOtpResponse>(VerifyOtpResponse.builder().message("Incorrect OTP").build(), HttpStatusCode.valueOf(401));
 
 
 

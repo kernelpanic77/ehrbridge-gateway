@@ -27,7 +27,6 @@ public class ConsentController {
         return  ResponseEntity.ok(consentService.generateConsent(requestBody, api_key));
     }
 
-
     @PostMapping("/receive")
     public ResponseEntity<HookConsentObjectResponse> hookConsentObject(@RequestBody HookConsentObjectRequest request)
     {

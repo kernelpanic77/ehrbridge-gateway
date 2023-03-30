@@ -11,6 +11,8 @@ import com.ehrbridge.gateway.entity.HospitalKeys;
 import com.ehrbridge.gateway.repository.HospitalKeysRepository;
 import com.ehrbridge.gateway.repository.HospitalRepository;
 
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -32,6 +34,7 @@ import lombok.RequiredArgsConstructor;
 import javax.mail.MessagingException;
 import java.io.UnsupportedEncodingException;
 import java.util.Date;
+import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -53,10 +56,18 @@ public class AuthService {
     private final OtpService otpService;
 
 
-    public RegisterReponse register(RegisterRequest request) throws MessagingException, UnsupportedEncodingException {
+    public ResponseEntity<RegisterReponse> register(RegisterRequest request) {
         String otp = otpService.generateOtp();
         Date otpValidity = new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(5));
-        System.out.println(otpValidity);
+
+        try {
+            var user = userRepository.findByEmail(request.getEmailAddress()).orElseThrow();
+            return new ResponseEntity<RegisterReponse>(RegisterReponse.builder().message("User Already exists").build(), HttpStatusCode.valueOf(400));
+        } catch (NoSuchElementException e) {
+
+        }
+
+
         var user = User
                 .builder()
                 .firstName(request.getFirstName())
@@ -74,12 +85,17 @@ public class AuthService {
 
         userRepository.save(user);
 
-        otpService.sendEmail(otp, user);
+
+        try {
+            otpService.sendEmail(otp, user);
+        } catch (Exception e) {
+            return new ResponseEntity<RegisterReponse>(RegisterReponse.builder().message("Unable to send OTP").build(), HttpStatusCode.valueOf(500));
+        }
+
 
         var jwtToken = jwtService.generateToken(user);
-//
-//        return RegisterReponse.builder().token(jwtToken).ehrbid(user.getEhrbID()).build();
-        return RegisterReponse.builder().message("OTP sent Successfully").token(jwtToken).build();
+
+        return new ResponseEntity<RegisterReponse>(RegisterReponse.builder().message("OTP sent Successfully").token(jwtToken).build(), HttpStatusCode.valueOf(200));
     }
 
     public AuthResponse authenticate(AuthRequest request) throws UnsupportedEncodingException, MessagingException {

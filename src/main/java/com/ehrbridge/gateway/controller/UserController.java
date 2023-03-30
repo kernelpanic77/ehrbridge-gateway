@@ -35,17 +35,13 @@ public class UserController {
 
 
     @PostMapping("/register/user")
-    public ResponseEntity<RegisterReponse> registerUser(@RequestBody RegisterRequest request) throws MessagingException, UnsupportedEncodingException {
-        return ResponseEntity.ok(authService.register(request));
+    public ResponseEntity<RegisterReponse> registerUser(@RequestBody RegisterRequest request) {
+        return authService.register(request);
     }
 
     @PostMapping("/verifyOtp")
     public ResponseEntity<VerifyOtpResponse> registerUser(@RequestBody VerifyOtpRequest request) throws MessagingException, UnsupportedEncodingException {
-        VerifyOtpResponse response = otpService.verifyOtp(request);
-        if (response.getMessage().equals("OTP verification Successful")) {
-            return ResponseEntity.ok(authService.updateResponse(response));
-        }
-        return new ResponseEntity<VerifyOtpResponse>(response, HttpStatusCode.valueOf(403));
+        return otpService.verifyOtp(request);
     }
 
     @PostMapping("/signin/user")
@@ -62,7 +58,6 @@ public class UserController {
     @PostMapping("/register/hospital")
     public ResponseEntity<HospitalRegisterResponse> registerHospital(@RequestBody HospitalRegisterRequest request)
     {
-        
         return ResponseEntity.ok(authService.registerHospital(request));
     }
 

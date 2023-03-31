@@ -147,7 +147,7 @@ public class AuthService {
             hospitalRepository.save(hospital);
         }
         catch(Exception e){
-            return new 
+            return new ResponseEntity<HospitalRegisterResponse>(HospitalRegisterResponse.builder().message("Hospital Already exists").build(), HttpStatusCode.valueOf(400));
         }
 
 
@@ -162,7 +162,7 @@ public class AuthService {
 
         hospitalKeysRepository.save(hospital_key);
 
-        return HospitalRegisterResponse.builder().hospitalId(hospital.getHospitalId()).api_key(apiKey).build();
+        return new ResponseEntity<HospitalRegisterResponse>(HospitalRegisterResponse.builder().hospitalId(hospital.getHospitalId()).api_key(apiKey).message("Hospital Registered Successfully").build(), HttpStatusCode.valueOf(200));
     }
 
     String RandGeneratedStr(int l) {

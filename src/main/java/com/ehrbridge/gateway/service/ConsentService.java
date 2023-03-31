@@ -5,18 +5,19 @@ import com.ehrbridge.gateway.dto.Hospital.HookConsentObjectHIURequest;
 import com.ehrbridge.gateway.dto.Hospital.HookConsentObjectHIPRequest;
 import com.ehrbridge.gateway.dto.consent.GenerateConsentRequest;
 import com.ehrbridge.gateway.dto.consent.GenerateConsentResponse;
+import com.ehrbridge.gateway.entity.Doctor;
 import com.ehrbridge.gateway.entity.Transactions;
+import com.ehrbridge.gateway.repository.DoctorRepository;
+import com.ehrbridge.gateway.repository.HospitalRepository;
 import com.ehrbridge.gateway.repository.TransactionRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.twilio.http.Response;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -24,8 +25,10 @@ import org.springframework.web.client.RestTemplate;
 @RequiredArgsConstructor
 public class ConsentService {
     private final TransactionRepository transactionRepository;
-    // TODO: private final HospitalRepository hospitalRepository;
+    private final HospitalRepository hospitalRepository;
+    private final DoctorRepository doctorRepository;
     @Value("${consentmanager.host}")
+
     private String CM_URL;
 
     @Value("${consentmanager.consent-request.endpoint")
@@ -37,18 +40,42 @@ public class ConsentService {
 
     @Autowired
     private RestTemplate rest;
-    public GenerateConsentResponse generateConsent(GenerateConsentRequest request, String api_key)
+    public ResponseEntity<GenerateConsentResponse> generateConsent(GenerateConsentRequest request, String api_key)
     {
         String hiuId = request.getConsent_object().getHiuID();
         String hipId = request.getConsent_object().getHipID();
         String doctorId = request.getConsent_object().getDoctorID();
 
+        String hiuName,hipName, doctorName;
+        try{
+            var doctor = doctorRepository.findById(doctorId).orElseThrow();
+            doctorName = doctor.getFirstName() + " " + doctor.getLastName();
+        }catch (Exception e)
+        {
+            return new ResponseEntity<GenerateConsentResponse>(GenerateConsentResponse.builder().message("Doctor Id Not found in the registry").build(), HttpStatusCode.valueOf(400));
+        }
+        try{
+            var hiu = hospitalRepository.findById(hiuId).orElseThrow();
+            hiuName = hiu.getHospitalName();
+        }catch (Exception e)
+        {
+            return new ResponseEntity<GenerateConsentResponse>(GenerateConsentResponse.builder().message("HIU Id Not found in the registry").build(), HttpStatusCode.valueOf(400));
+
+        }
+        try{
+            var hip = hospitalRepository.findById(hipId).orElseThrow();
+            hipName = hip.getHospitalName();
+        }catch (Exception e)
+        {
+            return new ResponseEntity<GenerateConsentResponse>(GenerateConsentResponse.builder().message("HIP Id Not found in the registry").build(), HttpStatusCode.valueOf(400));
+
+        }
+
         if(!apiKeyService.validateApiKey(api_key))
         {
-            return GenerateConsentResponse.builder().message("API Key expired, please generate a new one").status("FAILED").build();
+            return new ResponseEntity<GenerateConsentResponse>(GenerateConsentResponse.builder().message("API Key expired, please generate a new one").status("FAILED").build(), HttpStatusCode.valueOf(402));
         }
-        System.out.println(hiuId);
-        System.out.println(apiKeyService.getHospitalIdfromApiKey(api_key));
+
         if(apiKeyService.getHospitalIdfromApiKey(api_key).equals(hiuId))
         {
             var transaction = Transactions.builder()
@@ -60,12 +87,13 @@ public class ConsentService {
 
             transactionRepository.save(transaction);
             var txnId = transaction.getTxnId();
+
             //TODO: Check iff HIP, HIU, Doctir iare valid and id's exist in the registry.
             //TODO: Get Original names from repository using id's.
             var requestDetails = RequestDetails.builder()
-                    .hipName("hip")
-                    .hiuName("hiu")
-                    .doctorName("doctor")
+                    .hipName(hipName)
+                    .hiuName(hiuName)
+                    .doctorName(doctorName)
                     .build();
             var consentManagerRequest = ConsentManagerRequest.builder()
                     .txnId(txnId)
@@ -78,16 +106,16 @@ public class ConsentService {
             {
                 transaction.setTxn_status("FAILED");
                 transactionRepository.save(transaction);
-                return GenerateConsentResponse.builder().txn_id(txnId).status("FAILED").build();
+                return new ResponseEntity<GenerateConsentResponse>(GenerateConsentResponse.builder().txn_id(txnId).status("FAILED").message("There wasn an error while sending the request to the consent manager, please try again").build(), HttpStatusCode.valueOf(503));
             }
             else
             {
-                return GenerateConsentResponse.builder().txn_id(txnId).status("PENDING").build();
+                return new ResponseEntity<GenerateConsentResponse>(GenerateConsentResponse.builder().txn_id(txnId).status("PENDING").message("Consent Request sent successfully").build(), HttpStatusCode.valueOf(200));
             }
         }
         else
         {
-            return GenerateConsentResponse.builder().message("Please enter a valid API KEY").status("FAILED").build();
+            return new ResponseEntity<GenerateConsentResponse>(GenerateConsentResponse.builder().message("Please enter a valid API KEY").status("FAILED").build(), HttpStatusCode.valueOf(401));
         }
 
 
@@ -113,16 +141,16 @@ public class ConsentService {
         return null;
     }
 
-    public HookConsentObjectResponse receiveConsent(HookConsentObjectRequest request) {
+    public ResponseEntity<HookConsentObjectResponse> receiveConsent(HookConsentObjectRequest request) {
         Transactions transaction = transactionRepository.findByTxnId(request.getTxnId()).orElseThrow();
 
         var hiuId = transaction.getHiuId();
         var hipId = transaction.getHipId();
 
-        // TODO: var hookURLHIU = hospitalRepository.findById(hiudId).getHookURL();
-        // TODO: var hookURLHIP = hospitalRepository.findById(hipdId).getHookURL();
-        String hookURLHIU = null;
-        String hookURLHIP = null;
+        // TODO: var hookURLHIU = hospitalRepository.findById(hiudId).getHookURL(); - DONE
+        // TODO: var hookURLHIP = hospitalRepository.findById(hipdId).getHookURL(); - DONE
+        String hookURLHIU = hospitalRepository.findById(hiuId).orElseThrow().getHook_url();
+        String hookURLHIP = hospitalRepository.findById(hipId).orElseThrow().getHook_url();
 
         HookConsentObjectHIURequest hiuRequest = HookConsentObjectHIURequest.builder()
                     .consent_status(request.getConsent_status())
@@ -141,7 +169,7 @@ public class ConsentService {
         ResponseEntity<String> responseHIU = pushConsentObjectToHIU(hiuRequest, hookURLHIP);
 
 
-        return HookConsentObjectResponse.builder().message("Consent Objects Sent Successfully").build();
+        return new ResponseEntity<HookConsentObjectResponse>(HookConsentObjectResponse.builder().message("Consent Objects Sent Successfully").build(), HttpStatusCode.valueOf(200));
     }
 
     private ResponseEntity<String> pushConsentObjectToHIU(HookConsentObjectHIURequest request, String hookURL) {

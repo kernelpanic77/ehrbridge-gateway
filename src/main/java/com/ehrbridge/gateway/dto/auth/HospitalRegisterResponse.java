@@ -12,4 +12,5 @@ import lombok.NoArgsConstructor;
 public class HospitalRegisterResponse {
     private String api_key;
     private String hospitalId;
+    private String message;
 }

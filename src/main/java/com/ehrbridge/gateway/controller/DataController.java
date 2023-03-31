@@ -26,6 +26,6 @@ public class DataController {
 
     @PostMapping("/request")
     public ResponseEntity<DataResponse> getDataReqFromHIU(@RequestBody DataRequest request, @RequestHeader(value="api_key", required=true) String api_key){
-        return ResponseEntity.ok(dataService.forwardDataReqToHIP(request, api_key));
+        return dataService.forwardDataReqToHIP(request, api_key);
     }
 }

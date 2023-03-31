@@ -24,13 +24,13 @@ public class ConsentController {
     @PostMapping("/generate")
     public ResponseEntity<GenerateConsentResponse> generateConsentRequest(@RequestBody GenerateConsentRequest requestBody, @RequestHeader(value="api_key", required=true) String api_key)
     {
-        return  ResponseEntity.ok(consentService.generateConsent(requestBody, api_key));
+        return  consentService.generateConsent(requestBody, api_key);
     }
 
     @PostMapping("/receive")
     public ResponseEntity<HookConsentObjectResponse> hookConsentObject(@RequestBody HookConsentObjectRequest request)
     {
-        return  ResponseEntity.ok(consentService.receiveConsent(request));
+        return  consentService.receiveConsent(request);
     }
 
     

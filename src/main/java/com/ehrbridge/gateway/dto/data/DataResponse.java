@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class DataResponse {
-    private String msg;
+    private String message;
     private String status;
 }

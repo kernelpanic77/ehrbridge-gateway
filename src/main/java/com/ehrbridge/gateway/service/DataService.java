@@ -2,11 +2,9 @@ package com.ehrbridge.gateway.service;
 
 import java.util.Optional;
 
+import com.ehrbridge.gateway.dto.auth.RegisterReponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
@@ -35,23 +33,40 @@ public class DataService {
 
     private final ApiKeyService apiKeyService;
 
-    public DataResponse forwardDataReqToHIP(DataRequest request, String api_key){
+    public ResponseEntity<DataResponse> forwardDataReqToHIP(DataRequest request, String api_key){
+        boolean api_keyValidity;
+        try {
+             api_keyValidity = apiKeyService.validateApiKey(api_key);
+        }
+        catch (Exception e)
+        {
+            return new ResponseEntity<DataResponse>(DataResponse.builder().message("API Key invalid").build(), HttpStatusCode.valueOf(401));
+        }
         // check if api_key is valid
-        if(!apiKeyService.validateApiKey(api_key)){
-            return DataResponse.builder().msg("Api Key is invalid!").status("FAIL").build();
+        if(!api_keyValidity){
+            return new ResponseEntity<DataResponse>(DataResponse.builder().message("Api Key expired").status("FAIL").build(), HttpStatusCode.valueOf(402));
+        }
+        boolean checkApiKey;
+        try{
+            checkApiKey = apiKeyService.getHospitalIdfromApiKey(api_key).equals(request.getHiuID());
+        }catch (Exception e)
+        {
+            return new ResponseEntity<DataResponse>(DataResponse.builder().message("API Key invalid").build(), HttpStatusCode.valueOf(401));
         }
 
-        if(!apiKeyService.getHospitalIdfromApiKey(api_key).equals(request.getHiuID())){
-            return DataResponse.builder().msg("Api key does not match with the hiuUD in the request, please check the hiuID").status("FAIL").build();
+        if(!checkApiKey){
+            return new ResponseEntity<DataResponse>(DataResponse.builder().message("API KEy Invalid").status("FAIL").build(), HttpStatusCode.valueOf(401));
+        }
+        Hospital hipDetails;
+        try{
+             hipDetails = hospitalRepository.findByHospitalId(request.getHipID()).orElseThrow();
+        } catch (Exception e)
+        {
+            return new ResponseEntity<DataResponse>(DataResponse.builder().message("HIP Not found").status("FAIL").build(), HttpStatusCode.valueOf(400));
         }
 
-        Optional<Hospital> hipDetails = hospitalRepository.findByHospitalId(request.getHipID());
 
-        if(!hipDetails.isPresent()){
-            return DataResponse.builder().msg("hipID invalid!").status("FAIL").build();
-        }
-
-        String HOSPITAL_HOOK_URL = hipDetails.get().getHook_url();
+        String HOSPITAL_HOOK_URL = hipDetails.getHook_url();
         String HOSPITAL_DATA_REQ_ENDPOINT = "/api/v1/data/request-data-hip";
 
         ObjectWriter objectWriter = new ObjectMapper().writer().withDefaultPrettyPrinter();
@@ -60,16 +75,16 @@ public class DataService {
             HttpEntity<String> requestEntity = new HttpEntity<String>(jsonHIPReq, headers);
             ResponseEntity<DataRequestHIPResponse> responseEntity = rest.exchange(HOSPITAL_HOOK_URL + HOSPITAL_DATA_REQ_ENDPOINT, HttpMethod.POST, requestEntity, DataRequestHIPResponse.class);
             if(responseEntity.getStatusCode().value() != 200){
-                return DataResponse.builder().msg("unable to connect with HIP").status("FAIL").build();
+                return new ResponseEntity<DataResponse>(DataResponse.builder().message("unable to connect with HIP").status("FAIL").build(), HttpStatusCode.valueOf(503));
             }
             System.out.println(responseEntity.getBody());
-            return DataResponse.builder().msg("Data Request sent to hip succssfully!").status("PASS").build();
+            return new ResponseEntity<DataResponse>(DataResponse.builder().message("Data Request sent to hip succssfully!").status("PASS").build(), HttpStatusCode.valueOf(200));
         } catch (Exception e) {
             // TODO: handle exception
             e.printStackTrace();
         }
         
-        return DataResponse.builder().msg("Internal Server error").status("FAIL").build();
+        return new ResponseEntity<DataResponse>(DataResponse.builder().message("Internal Server error").status("FAIL").build(), HttpStatusCode.valueOf(500));
     }
 
 }

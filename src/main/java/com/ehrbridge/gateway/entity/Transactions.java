@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 public class Transactions {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private String txnId;
+    private String txnID;
 
     private String txn_status;
     private String hiuId;

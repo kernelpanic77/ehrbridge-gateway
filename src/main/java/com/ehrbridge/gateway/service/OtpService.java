@@ -30,6 +30,8 @@ public class OtpService {
     @Autowired
     private final PasswordEncoder passwordEncoder;
 
+    private final JwtService jwtService;
+
     public String generateOtp() {
         Random rnd = new Random();
         int n = 100000 + rnd.nextInt(900000);
@@ -93,7 +95,10 @@ public class OtpService {
         {
             user.setOtpValidity(new Date());
             userRepository.save(user);
-            return new ResponseEntity<VerifyOtpResponse>(VerifyOtpResponse.builder().message("OTP verification Successful").build(), HttpStatusCode.valueOf(200));
+
+            String token = jwtService.generateToken(user);
+
+            return new ResponseEntity<VerifyOtpResponse>(VerifyOtpResponse.builder().message("OTP verification Successful").ehrbid(user.getEhrbID()).token(token).build(), HttpStatusCode.valueOf(200));
         }
 
         return new ResponseEntity<VerifyOtpResponse>(VerifyOtpResponse.builder().message("Incorrect OTP").build(), HttpStatusCode.valueOf(401));

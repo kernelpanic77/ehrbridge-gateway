@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class HookConsentObjectRequest {
-    private String txnId;
+    private String txnID;
     private String consent_status;
     private String public_key;
     private String signed_consent_obj;

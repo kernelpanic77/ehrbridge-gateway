@@ -28,10 +28,9 @@ public class ConsentService {
     private final HospitalRepository hospitalRepository;
     private final DoctorRepository doctorRepository;
     @Value("${consentmanager.host}")
-
     private String CM_URL;
 
-    @Value("${consentmanager.consent-request.endpoint")
+    @Value("${consentmanager.consent-request.endpoint}")
     private String CM_ENDPOINT;
 
     @Autowired
@@ -45,6 +44,7 @@ public class ConsentService {
         String hiuId = request.getConsent_object().getHiuID();
         String hipId = request.getConsent_object().getHipID();
         String doctorId = request.getConsent_object().getDoctorID();
+
 
         String hiuName,hipName, doctorName;
         try{
@@ -70,9 +70,9 @@ public class ConsentService {
             return new ResponseEntity<GenerateConsentResponse>(GenerateConsentResponse.builder().message("HIP Id Not found in the registry").build(), HttpStatusCode.valueOf(400));
 
         }
-
         if(!apiKeyService.validateApiKey(api_key))
         {
+            System.out.println("dlkhkjkk");
             return new ResponseEntity<GenerateConsentResponse>(GenerateConsentResponse.builder().message("API Key expired, please generate a new one").status("FAILED").build(), HttpStatusCode.valueOf(402));
         }
 
@@ -86,7 +86,7 @@ public class ConsentService {
                     .build();
 
             transactionRepository.save(transaction);
-            var txnId = transaction.getTxnId();
+            var txnID = transaction.getTxnID();
 
             //TODO: Check iff HIP, HIU, Doctir iare valid and id's exist in the registry.
             //TODO: Get Original names from repository using id's.
@@ -96,21 +96,22 @@ public class ConsentService {
                     .doctorName(doctorName)
                     .build();
             var consentManagerRequest = ConsentManagerRequest.builder()
-                    .txnId(txnId)
+                    .txnID(txnID)
                     .requestDetails(requestDetails)
-                    .consentObjectRequest(request.getConsent_object())
+                    .consent_obj(request.getConsent_object())
                     .build();
-
-            ResponseEntity<ConsentManagerResponse> consentManagerResponse = pushConsentObjectToGateway(consentManagerRequest);
+            ResponseEntity<ConsentManagerResponse> consentManagerResponse = pushConsentObjectToCM(consentManagerRequest);
+            System.out.println(txnID);
             if(consentManagerResponse == null)
             {
                 transaction.setTxn_status("FAILED");
                 transactionRepository.save(transaction);
-                return new ResponseEntity<GenerateConsentResponse>(GenerateConsentResponse.builder().txn_id(txnId).status("FAILED").message("There wasn an error while sending the request to the consent manager, please try again").build(), HttpStatusCode.valueOf(503));
+                return new ResponseEntity<GenerateConsentResponse>(GenerateConsentResponse.builder().txnID(txnID).status("FAILED").message("There wasn an error while sending the request to the consent manager, please try again").build(), HttpStatusCode.valueOf(503));
             }
             else
             {
-                return new ResponseEntity<GenerateConsentResponse>(GenerateConsentResponse.builder().txn_id(txnId).status("PENDING").message("Consent Request sent successfully").build(), HttpStatusCode.valueOf(200));
+                System.out.println("yayyy");
+                return new ResponseEntity<GenerateConsentResponse>(GenerateConsentResponse.builder().txnID(txnID).status("PENDING").message("Consent Request sent successfully").build(), HttpStatusCode.valueOf(200));
             }
         }
         else
@@ -123,10 +124,11 @@ public class ConsentService {
 
 
 
-    ResponseEntity<ConsentManagerResponse> pushConsentObjectToGateway(ConsentManagerRequest request)
+    ResponseEntity<ConsentManagerResponse> pushConsentObjectToCM(ConsentManagerRequest request)
     {
         final String CM_REQ_ENDPOINT = CM_URL + CM_ENDPOINT;
         ObjectWriter objectWriter = new ObjectMapper().writer().withDefaultPrettyPrinter();
+        System.out.println(CM_REQ_ENDPOINT);
         try {
             String jsonCmRequest = objectWriter.writeValueAsString(request);
             HttpEntity<String> requestEntity = new HttpEntity<String>(jsonCmRequest, headers);
@@ -142,7 +144,8 @@ public class ConsentService {
     }
 
     public ResponseEntity<HookConsentObjectResponse> receiveConsent(HookConsentObjectRequest request) {
-        Transactions transaction = transactionRepository.findByTxnId(request.getTxnId()).orElseThrow();
+        System.out.println(request);
+        Transactions transaction = transactionRepository.findByTxnID(request.getTxnID()).orElseThrow();
 
         var hiuId = transaction.getHiuId();
         var hipId = transaction.getHipId();
@@ -152,21 +155,23 @@ public class ConsentService {
         String hookURLHIU = hospitalRepository.findById(hiuId).orElseThrow().getHook_url();
         String hookURLHIP = hospitalRepository.findById(hipId).orElseThrow().getHook_url();
 
-        HookConsentObjectHIURequest hiuRequest = HookConsentObjectHIURequest.builder()
+        HookConsentObjectHIURequest hiuRequest = HookConsentObjectHIURequest
+                    .builder()
                     .consent_status(request.getConsent_status())
                     .signed_consent_object(request.getSigned_consent_obj())
-                    .txnId(request.getTxnId())
+                    .txnID(request.getTxnID())
                     .build();
 
         HookConsentObjectHIPRequest hipRequest = HookConsentObjectHIPRequest
                 .builder()
                 .signed_consent_obj(request.getSigned_consent_obj())
-                .txnID(request.getTxnId())
+                .txnID(request.getTxnID())
                 .public_key(request.getPublic_key())
                 .build();
-
-        ResponseEntity<String> responseHIP = pushConsentObjectToHIP(hipRequest, hookURLHIU );
-        ResponseEntity<String> responseHIU = pushConsentObjectToHIU(hiuRequest, hookURLHIP);
+        System.out.println(hipRequest);
+        System.out.println(hiuRequest);
+        ResponseEntity<String> responseHI = pushConsentObjectToHIP(hipRequest, hookURLHIP );
+        ResponseEntity<String> responseHIU = pushConsentObjectToHIU(hiuRequest, hookURLHIU);
 
 
         return new ResponseEntity<HookConsentObjectResponse>(HookConsentObjectResponse.builder().message("Consent Objects Sent Successfully").build(), HttpStatusCode.valueOf(200));
@@ -176,8 +181,12 @@ public class ConsentService {
         final String URL = hookURL + "/api/v1/consent/recieve-hiu";
         ObjectWriter objectWriter = new ObjectMapper().writer().withDefaultPrettyPrinter();
         try {
+            System.out.println(request);
             String jsonCmRequest = objectWriter.writeValueAsString(request);
+            System.out.println(jsonCmRequest);
             HttpEntity<String> requestEntity = new HttpEntity<String>(jsonCmRequest, headers);
+            System.out.println(jsonCmRequest);
+            System.out.println(URL);
             ResponseEntity<String> responseEntity = rest.exchange(URL, HttpMethod.POST, requestEntity, String.class);
             if(responseEntity.getStatusCode().value() == 200){
                 return responseEntity;

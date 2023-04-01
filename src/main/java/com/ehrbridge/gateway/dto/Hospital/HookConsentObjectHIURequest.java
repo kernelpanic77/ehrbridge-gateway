@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class HookConsentObjectHIURequest {
-    private String txnId;
+    private String txnID;
     private String consent_status;
     private String signed_consent_object;
 

@@ -7,7 +7,7 @@ spring:
     jpa:
         show-sql: true 
         hibernate:
-            ddl-auto: create-drop
+            ddl-auto: update
         properties:
             hibernate:
                 dialect: org.hibernate.dialect.MySQLDialect
@@ -16,6 +16,6 @@ ehrbridge:
         app:
             jwtSecret: 655468576D5A7133743677397A24432646294A404E635266556A586E32723575
 consentmanager:
-    host: http://cm.com
+    host: http://localhost:8083
     consent-request:
-        endpoint: /api/v1/consent/recieve/
+        endpoint: /api/v1/consent/recieve

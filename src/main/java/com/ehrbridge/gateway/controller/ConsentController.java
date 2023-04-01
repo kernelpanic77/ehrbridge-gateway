@@ -24,6 +24,7 @@ public class ConsentController {
     @PostMapping("/generate")
     public ResponseEntity<GenerateConsentResponse> generateConsentRequest(@RequestBody GenerateConsentRequest requestBody, @RequestHeader(value="api_key", required=true) String api_key)
     {
+        System.out.println("cjejjce");
         return  consentService.generateConsent(requestBody, api_key);
     }
 

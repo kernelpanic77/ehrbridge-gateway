@@ -34,6 +34,8 @@ public class DataService {
     private final ApiKeyService apiKeyService;
 
     public ResponseEntity<DataResponse> forwardDataReqToHIP(DataRequest request, String api_key){
+        System.out.println(request);
+        System.out.println(api_key);
         boolean api_keyValidity;
         try {
              api_keyValidity = apiKeyService.validateApiKey(api_key);
@@ -73,6 +75,7 @@ public class DataService {
         try {
             String jsonHIPReq = objectWriter.writeValueAsString(request);
             HttpEntity<String> requestEntity = new HttpEntity<String>(jsonHIPReq, headers);
+            System.out.println(HOSPITAL_HOOK_URL + HOSPITAL_DATA_REQ_ENDPOINT);
             ResponseEntity<DataRequestHIPResponse> responseEntity = rest.exchange(HOSPITAL_HOOK_URL + HOSPITAL_DATA_REQ_ENDPOINT, HttpMethod.POST, requestEntity, DataRequestHIPResponse.class);
             if(responseEntity.getStatusCode().value() != 200){
                 return new ResponseEntity<DataResponse>(DataResponse.builder().message("unable to connect with HIP").status("FAIL").build(), HttpStatusCode.valueOf(503));

@@ -1,0 +1,11 @@
+2023-04-09 15:15:18.694 IST [32654] LOG:  starting PostgreSQL 14.7 (Homebrew) on aarch64-apple-darwin22.1.0, compiled by Apple clang version 14.0.0 (clang-1400.0.29.202), 64-bit
+2023-04-09 15:15:18.698 IST [32654] LOG:  listening on IPv6 address "::1", port 5432
+2023-04-09 15:15:18.698 IST [32654] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2023-04-09 15:15:18.698 IST [32654] LOG:  listening on Unix socket "/tmp/.s.PGSQL.5432"
+2023-04-09 15:15:18.703 IST [32662] LOG:  database system was shut down at 2023-04-02 02:21:34 IST
+2023-04-09 15:15:18.708 IST [32654] LOG:  database system is ready to accept connections
+2023-04-09 21:40:54.540 IST [32654] LOG:  received SIGHUP, reloading configuration files
+2023-04-10 01:50:58.583 IST [32654] LOG:  received smart shutdown request
+2023-04-10 01:50:58.602 IST [32654] LOG:  background worker "logical replication launcher" (PID 32668) exited with exit code 1
+2023-04-10 01:50:58.602 IST [32663] LOG:  shutting down
+2023-04-10 01:50:58.627 IST [32654] LOG:  database system is shut down

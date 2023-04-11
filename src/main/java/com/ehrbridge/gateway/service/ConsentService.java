@@ -75,7 +75,6 @@ public class ConsentService {
             System.out.println("dlkhkjkk");
             return new ResponseEntity<GenerateConsentResponse>(GenerateConsentResponse.builder().message("API Key expired, please generate a new one").status("FAILED").build(), HttpStatusCode.valueOf(402));
         }
-
         if(apiKeyService.getHospitalIdfromApiKey(api_key).equals(hiuId))
         {
             var transaction = Transactions.builder()
@@ -214,8 +213,5 @@ public class ConsentService {
 
         }
         return null;
-
-
-
     }
 }

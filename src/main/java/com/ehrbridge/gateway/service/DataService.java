@@ -1,13 +1,9 @@
 package com.ehrbridge.gateway.service;
 
-import java.util.Optional;
-
-import com.ehrbridge.gateway.dto.auth.RegisterReponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import com.ehrbridge.gateway.dto.data.DataRequest;
 import com.ehrbridge.gateway.dto.data.DataRequestHIPResponse;
@@ -49,7 +45,10 @@ public class DataService {
             return new ResponseEntity<DataResponse>(DataResponse.builder().message("Api Key expired").status("FAIL").build(), HttpStatusCode.valueOf(402));
         }
         boolean checkApiKey;
+        System.out.println("yayyy");
         try{
+            System.out.println(api_key);
+            System.out.println(request.getHiuID());
             checkApiKey = apiKeyService.getHospitalIdfromApiKey(api_key).equals(request.getHiuID());
         }catch (Exception e)
         {
@@ -57,7 +56,7 @@ public class DataService {
         }
 
         if(!checkApiKey){
-            return new ResponseEntity<DataResponse>(DataResponse.builder().message("API KEy Invalid").status("FAIL").build(), HttpStatusCode.valueOf(401));
+            return new ResponseEntity<DataResponse>(DataResponse.builder().message("API Key Invalid").status("FAIL").build(), HttpStatusCode.valueOf(401));
         }
         Hospital hipDetails;
         try{

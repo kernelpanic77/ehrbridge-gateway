@@ -1,17 +1,25 @@
 import React, { useState } from 'react';
 import Swal from 'sweetalert2';
 import axios from 'axios';
-const Register = ({ setIsAuthenticated, setIsRegistering }) => {
+const HospitalRegister = () => {
   // const adminEmail = 'admin@example.com';
   // const adminPassword = 'qwerty';
-
-  const [fname, setFname] = useState('');
-  const [lname, setLname] = useState('');
-  const [phoneNum, setPhoneNum] = useState('');
-  const [dob, setDob] = useState('');
+/*
+    "hospitalName": "hiu",
+    "emailAddress": "hiu@email.com",
+    "phoneString": "1234677890",
+    "address": "Delhi",
+    "hospitalLicense": "kjgjdskjdjkld",
+    "hook_url": "http://localhost:8081"
+*/
+  const [hospitalName, setHospitalName] = useState('');
+  const [emailAddress, setEmailAddress] = useState('');
+  const [phoneString, setPhoneString] = useState('');
   const [address, setAddress] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [hospitalLicense, setHospitalLicense] = useState('');
+  const [hook_url, setHook_url] = useState('');
+
+
   const [otp, setOtp] = useState();
   const [isOtpVerified, setIsOtpVerified] = useState(false);
   const [isOtpRecieved, setIsOtpRecieved] = useState(false);
@@ -43,8 +51,6 @@ const Register = ({ setIsAuthenticated, setIsRegistering }) => {
             localStorage.setItem('token', response.data.token)
             localStorage.setItem('is_authenticated', true);
             localStorage.setItem('abha_id', response.data.ehrbid);
-            setIsAuthenticated(true);
-  
             Swal.fire({
               icon: 'success',
               title: 'OTP Verified',
@@ -77,16 +83,15 @@ const Register = ({ setIsAuthenticated, setIsRegistering }) => {
   const handleRegister = e => {
     e.preventDefault();
     let details = {
-      firstName : fname,
-      lastName : lname,
-      phoneString : phoneNum,
-      password:password,
-      address : address,
-      emailAddress : email, 
-      gender: "M"
+      hospitalName: hospitalName,
+      emailAddress: emailAddress,
+      phoneString: phoneString,
+      address: address,
+      hospitalLicense: hospitalLicense,
+      hook_url: hook_url
     }
     // send a post request with details to http://localhost:8090/author/Register
-    axios.post("http://localhost:8080/api/v1/auth/register/user",details).then((response) => {
+    axios.post("http://localhost:8080/api/v1/auth/register/hospital",details).then((response) => {
       console.log(response);
       if (response.data != null) {
         // store auth token in local storage
@@ -97,13 +102,14 @@ const Register = ({ setIsAuthenticated, setIsRegistering }) => {
             Swal.showLoading();
           },
           willClose: () => {
-            localStorage.setItem('token', response.data.token)
-            setIsOtpRecieved(true);
+            localStorage.setItem('doctor_ehrb_id', response.data.hospitalId);
             Swal.fire({
               icon: 'success',
-              title: 'OTP Sent to Email',
-              showConfirmButton: false,
-              timer: 1500,
+              title: "Success, Your ABHA ID: " + response.data.hospitalId + "\n Your API Key: " + response.data.api_key,
+              showConfirmButton: true,
+              willClose: () => {
+                window.location.reload();
+              }
             });
           },
         });
@@ -131,55 +137,37 @@ const Register = ({ setIsAuthenticated, setIsRegistering }) => {
   return (
     <div className="small-container">
       <form onSubmit={handleRegister}>
-        <h1>Patient ABHA ID Register</h1>
-        <div style={{display:"flex", justifyContent:"space-between"}}>
+        <h1>Hospital ABHA ID Register</h1>
+        <label htmlFor='hospitalName'>Hospital Name</label>
         <input
-          id="fname"
+          id="hospitalName"
           type="text"
-          name="fname"
-          placeholder="First Name"
-          value={fname} 
-          onChange={e => setFname(e.target.value)}
+          name="hospitalName"
+          placeholder="Hospital Name"
+          value={hospitalName} 
+          onChange={e => setHospitalName(e.target.value)}
           style={{marginRight:"20px"}}
         />
-        <input
-          id="lname"
-          type="text"
-          name="lname"
-          placeholder="Last Name"
-          value={lname} 
-          onChange={e => setLname(e.target.value)}
-        />
-        </div>
         <div style={{display:"flex", justifyContent:"space-between"}}>
         <input
-          id="phoneNum"
+          id="phoneString"
           type="text"
-          name="phoneNum"
+          name="phoneString"
           placeholder="Phone Number"
-          value={phoneNum} 
-          onChange={e => setPhoneNum(e.target.value)}
+          value={phoneString} 
+          onChange={e => setPhoneString(e.target.value)}
           style={{marginRight:"20px"}}
         />
       <input
-          id="email"
+          id="emailAddress"
           type="email"
-          name="email"
+          name="emailAddress"
           placeholder="Email Address"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
+          value={emailAddress}
+          onChange={e => setEmailAddress(e.target.value)}
         />
         </div>
-        <label htmlFor="dob">Date of Birth</label>
-        <input
-          id="dob"
-          type="date"
-          name="dob"
-          placeholder="Date of Birth"
-          value={dob} 
-          onChange={e => setDob(e.target.value)}
-        />
-        <label htmlFor='address'>Patient Address</label>
+        <label htmlFor='address'>Address</label>
         <input
           id="address"
           type="text"
@@ -189,22 +177,32 @@ const Register = ({ setIsAuthenticated, setIsRegistering }) => {
           onChange={e => setAddress(e.target.value)}
           style={{marginRight:"20px"}}
         />
-                <label htmlFor='password'>Password</label>
+                <label htmlFor='hospitalLicense'>Hospital License</label>
         <input
-          id="address"
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={password} 
-          onChange={e => setPassword(e.target.value)}
+          id="hospitalLicense"
+          type="text"
+          name="hospitalLicense"
+          placeholder="Hospital License"
+          value={hospitalLicense} 
+          onChange={e => setHospitalLicense(e.target.value)}
+          style={{marginRight:"20px"}}
+        />
+                <label htmlFor='hook_url'>Hook URL</label>
+        <input
+          id="hook_url"
+          type="text"
+          name="hook_url"
+          placeholder="Hook URL"
+          value={hook_url} 
+          onChange={e => setHook_url(e.target.value)}
           style={{marginRight:"20px"}}
         />
         {isOtpRecieved && (
                 <div style={{display:"flex", justifyContent:"space-between"}}>
         <input
-          id="phoneNum"
+          id="phoneString"
           type="number"
-          name="phoneNum"
+          name="phoneString"
           placeholder="Enter OTP"
           value={otp} 
           onChange={e => setOtp(e.target.value)}
@@ -219,15 +217,8 @@ const Register = ({ setIsAuthenticated, setIsRegistering }) => {
         </div>)}
         <input style={{ marginTop: '12px' }} type="submit" value="Register" />
       </form>
-      <label for = "login">Already have an account?</label>
-      <input
-            className="button"
-            type="button"
-            value="Login"
-            onClick={() => setIsRegistering(false)}
-          />
     </div>
   );
 };
 
-export default Register;
+export default HospitalRegister;

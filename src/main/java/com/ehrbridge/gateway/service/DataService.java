@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.ehrbridge.gateway.dto.data.DataRequest;
+import com.ehrbridge.gateway.dto.data.DataRequestHIPRequest;
 import com.ehrbridge.gateway.dto.data.DataRequestHIPResponse;
 import com.ehrbridge.gateway.dto.data.DataResponse;
 import com.ehrbridge.gateway.entity.Hospital;
@@ -66,13 +67,25 @@ public class DataService {
             return new ResponseEntity<DataResponse>(DataResponse.builder().message("HIP Not found").status("FAIL").build(), HttpStatusCode.valueOf(400));
         }
 
+        var dataRequestHIP = DataRequestHIPRequest
+                .builder()
+                .encrypted_consent_object(request.getSigned_consent_object())
+                .txnID(request.getTxnID())
+                .requestID(request.getRequestID())
+                .ehrbID(request.getEhrbID())
+                .hiuID(request.getHiuID())
+                .request_msg(request.getRequest_msg())
+                .callbackURL(request.getCallbackURL())
+                .dateFrom(request.getDateFrom())
+                .dateTo(request.getDateTo())
+                .build();
 
         String HOSPITAL_HOOK_URL = hipDetails.getHook_url();
         String HOSPITAL_DATA_REQ_ENDPOINT = "/api/v1/data/request-data-hip";
 
         ObjectWriter objectWriter = new ObjectMapper().writer().withDefaultPrettyPrinter();
         try {
-            String jsonHIPReq = objectWriter.writeValueAsString(request);
+            String jsonHIPReq = objectWriter.writeValueAsString(dataRequestHIP);
             HttpEntity<String> requestEntity = new HttpEntity<String>(jsonHIPReq, headers);
             System.out.println(HOSPITAL_HOOK_URL + HOSPITAL_DATA_REQ_ENDPOINT);
             ResponseEntity<DataRequestHIPResponse> responseEntity = rest.exchange(HOSPITAL_HOOK_URL + HOSPITAL_DATA_REQ_ENDPOINT, HttpMethod.POST, requestEntity, DataRequestHIPResponse.class);

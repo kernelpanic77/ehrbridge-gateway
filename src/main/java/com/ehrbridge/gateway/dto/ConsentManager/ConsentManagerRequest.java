@@ -12,6 +12,6 @@ import lombok.NoArgsConstructor;
 @Builder
 public class ConsentManagerRequest {
     private String txnID;
-    private RequestDetails requestDetails;
+    private RequestDetails request_details;
     private ConsentObjectRequest consent_obj;
 }

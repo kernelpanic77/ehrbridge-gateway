@@ -69,7 +69,7 @@ public class DataService {
 
         var dataRequestHIP = DataRequestHIPRequest
                 .builder()
-                .encrypted_consent_object(request.getSigned_consent_object())
+                .signed_consent_object(request.getSigned_consent_object())
                 .txnID(request.getTxnID())
                 .requestID(request.getRequestID())
                 .ehrbID(request.getEhrbID())
@@ -78,6 +78,8 @@ public class DataService {
                 .callbackURL(request.getCallbackURL())
                 .dateFrom(request.getDateFrom())
                 .dateTo(request.getDateTo())
+                .hiType(request.getHiType())
+                .departments(request.getDepartments())
                 .build();
 
         String HOSPITAL_HOOK_URL = hipDetails.getHook_url();
@@ -88,6 +90,8 @@ public class DataService {
             String jsonHIPReq = objectWriter.writeValueAsString(dataRequestHIP);
             HttpEntity<String> requestEntity = new HttpEntity<String>(jsonHIPReq, headers);
             System.out.println(HOSPITAL_HOOK_URL + HOSPITAL_DATA_REQ_ENDPOINT);
+            System.out.println("PLEASE FREE ME");
+            System.out.println(request);
             ResponseEntity<DataRequestHIPResponse> responseEntity = rest.exchange(HOSPITAL_HOOK_URL + HOSPITAL_DATA_REQ_ENDPOINT, HttpMethod.POST, requestEntity, DataRequestHIPResponse.class);
             if(responseEntity.getStatusCode().value() != 200){
                 return new ResponseEntity<DataResponse>(DataResponse.builder().message("unable to connect with HIP").status("FAIL").build(), HttpStatusCode.valueOf(503));

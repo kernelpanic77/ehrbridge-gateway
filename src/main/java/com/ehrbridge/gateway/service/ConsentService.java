@@ -96,7 +96,7 @@ public class ConsentService {
                     .build();
             var consentManagerRequest = ConsentManagerRequest.builder()
                     .txnID(txnID)
-                    .requestDetails(requestDetails)
+                    .request_details(requestDetails)
                     .consent_obj(request.getConsent_object())
                     .build();
             ResponseEntity<ConsentManagerResponse> consentManagerResponse = pushConsentObjectToCM(consentManagerRequest);

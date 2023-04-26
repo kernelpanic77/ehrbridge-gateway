@@ -3,7 +3,7 @@ package com.ehrbridge.gateway.dto.data;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
+import java.util.Date;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -17,6 +17,8 @@ public class DataRequest {
     private String hipID;
     private String request_msg;
     private String callbackURL;   
-    private String dateFrom;
-    private String dateTo; 
+    private Date dateFrom;
+    private Date dateTo; 
+    private String hiType;
+    private String departments;
 }

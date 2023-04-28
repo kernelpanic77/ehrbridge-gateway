@@ -19,3 +19,7 @@ consentmanager:
     host: http://localhost:8083
     consent-request:
         endpoint: /api/v1/consent/recieve
+patientserver: 
+    host: http://localhost:8084
+    register-patient:
+        endpoint: /api/v1/patient/register

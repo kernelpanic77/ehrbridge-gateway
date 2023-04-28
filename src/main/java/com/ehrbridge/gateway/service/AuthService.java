@@ -4,13 +4,18 @@ import com.ehrbridge.gateway.dto.auth.*;
 
 import com.ehrbridge.gateway.dto.auth.doctor.DoctorRegisterRequest;
 import com.ehrbridge.gateway.dto.auth.doctor.DoctorRegisterResponse;
-
+import com.ehrbridge.gateway.dto.auth.RegisterPSResponse;
 
 import com.ehrbridge.gateway.entity.Hospital;
 import com.ehrbridge.gateway.entity.HospitalKeys;
 import com.ehrbridge.gateway.repository.HospitalKeysRepository;
 import com.ehrbridge.gateway.repository.HospitalRepository;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,7 +24,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
+import org.springframework.web.client.RestTemplate;
 
 import com.ehrbridge.gateway.entity.Doctor;
 
@@ -27,12 +32,16 @@ import com.ehrbridge.gateway.entity.Role;
 import com.ehrbridge.gateway.entity.User;
 import com.ehrbridge.gateway.repository.DoctorRepository;
 import com.ehrbridge.gateway.repository.UserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 
 import lombok.RequiredArgsConstructor;
 
 import java.util.Date;
 import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
+
+import org.springframework.beans.factory.annotation.Value;
 
 @Service
 @RequiredArgsConstructor
@@ -47,6 +56,17 @@ public class AuthService {
     private final AuthenticationManager authManager;
     private final OtpService otpService;
 
+    @Autowired
+    private HttpHeaders headers;
+
+    @Autowired
+    private RestTemplate rest;
+
+    @Value("${patientserver.host}")
+    private String PS_HOST;
+
+    @Value("${patientserver.register-patient.endpoint}")
+    private String PS_ENDPOINT;
 
     public ResponseEntity<RegisterReponse> register(RegisterRequest request) {
         String otp = otpService.generateOtp();
@@ -78,6 +98,35 @@ public class AuthService {
             otpService.sendEmail(otp, user);
         } catch (Exception e) {
             return new ResponseEntity<RegisterReponse>(RegisterReponse.builder().message("Unable to send OTP").build(), HttpStatusCode.valueOf(500));
+        }
+
+        String REQ_URL = PS_HOST + PS_ENDPOINT;
+        ObjectWriter objectWriter = new ObjectMapper().writer().withDefaultPrettyPrinter();
+        var regPatient = RegisterPatientServerRequest.builder()
+                                                        .firstName(request.getFirstName())
+                                                        .lastName(request.getLastName())
+                                                        .address(request.getAddress())
+                                                        .password(user.getPassword())
+                                                        .ehrbID(user.getEhrbID())
+                                                        .emailAddress(user.getEmail())
+                                                        .gender(request.getGender())
+                                                        .phoneString(request.getPhoneString())
+                                                        .address(request.getAddress())
+                                                        .build();
+        System.out.println(REQ_URL);
+        try {
+            
+            String jsonReq= objectWriter.writeValueAsString(regPatient);
+            System.out.println(jsonReq);
+            HttpEntity<String> requestEntity = new HttpEntity<String>(jsonReq, headers);
+            ResponseEntity<RegisterPSResponse> responseEntity = rest.exchange(REQ_URL, HttpMethod.POST, requestEntity, RegisterPSResponse.class);
+            System.out.println(responseEntity.getBody());
+            if(responseEntity.getStatusCode().value() != 200){
+                
+                return new ResponseEntity<RegisterReponse>(RegisterReponse.builder().message("Unable to Register patient with patient server").build(), HttpStatusCode.valueOf(501));     
+            }
+        } catch (Exception e){
+            e.printStackTrace();
         }
 
         var jwtToken = jwtService.generateToken(user);

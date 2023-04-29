@@ -15,8 +15,12 @@ import org.springframework.web.client.RestTemplate;
 
 import com.ehrbridge.gateway.dto.Hospital.FetchAllHospitalResponse;
 import com.ehrbridge.gateway.dto.Hospital.PatientServerHospitalsResponse;
+import com.ehrbridge.gateway.dto.Hospital.Visit;
 import com.ehrbridge.gateway.entity.Hospital;
 import com.ehrbridge.gateway.repository.HospitalRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.twilio.http.Response;
 
 import lombok.RequiredArgsConstructor;
 
@@ -29,6 +33,9 @@ public class HospitalService {
 
     @Value("${patientserver.hospital-discovery.endpoint}")
     private String PS_ENDPOINT;
+
+    @Value("${patientserver.notify-visit.endpoint}")
+    private String PS_VISIT_ENDPOINT;
 
     @Autowired
     private RestTemplate rest;
@@ -68,5 +75,21 @@ public class HospitalService {
         
         return new ResponseEntity<Hospital>(HttpStatusCode.valueOf(500));
 
+    }
+
+    public ResponseEntity<String> notifyVisit(Visit v){
+        String REQ_ENDPOINT = PS_HOST + PS_VISIT_ENDPOINT;
+        ObjectWriter objectWriter = new ObjectMapper().writer().withDefaultPrettyPrinter();
+        try {
+            String jsonPSRequest = objectWriter.writeValueAsString(v);
+            HttpEntity<String> requestEntity = new HttpEntity<String>(jsonPSRequest, headers);
+            ResponseEntity<String> responseEntity = rest.exchange(REQ_ENDPOINT, HttpMethod.POST, requestEntity, String.class);
+            if(responseEntity.getStatusCode().value() == 200){
+                return responseEntity;
+            }
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
+        return null;
     }
 }

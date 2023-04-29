@@ -25,3 +25,5 @@ patientserver:
         endpoint: /api/v1/patient/register
     hospital-discovery:
         endpoint: /api/v1/discovery/fetch-hospitals
+    notify-visit: 
+        endpoint: /api/v1/discovery/notify-visit

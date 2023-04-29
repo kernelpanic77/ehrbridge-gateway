@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ehrbridge.gateway.dto.Hospital.FetchAllHospitalResponse;
+import com.ehrbridge.gateway.dto.Hospital.PatientServerHospitalsResponse;
 import com.ehrbridge.gateway.entity.Hospital;
 import com.ehrbridge.gateway.service.HospitalService;
 
@@ -23,8 +24,8 @@ public class HospitalController {
     private HospitalService hospitalService;
 
     @GetMapping("/fetch-all")
-    public ResponseEntity<FetchAllHospitalResponse> fetchAllHospitals(){
-        return hospitalService.fetchHospitals();
+    public ResponseEntity<PatientServerHospitalsResponse> fetchAllHospitals(@RequestParam String ehrbID){
+        return hospitalService.fetchHospitals(ehrbID);
     }
     
     @GetMapping("/fetch")

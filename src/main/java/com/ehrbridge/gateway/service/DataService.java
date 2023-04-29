@@ -80,6 +80,7 @@ public class DataService {
                 .dateTo(request.getDateTo())
                 .hiType(request.getHiType())
                 .departments(request.getDepartments())
+                .rsa_pubkey(request.getRsa_pubkey())
                 .build();
 
         String HOSPITAL_HOOK_URL = hipDetails.getHook_url();

@@ -21,4 +21,5 @@ public class DataRequest {
     private Date dateTo; 
     private String[] hiType;
     private String[] departments;
+    private String rsa_pubkey;
 }

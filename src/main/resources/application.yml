@@ -23,3 +23,5 @@ patientserver:
     host: http://localhost:8084
     register-patient:
         endpoint: /api/v1/patient/register
+    hospital-discovery:
+        endpoint: /api/v1/discovery/fetch-hospitals

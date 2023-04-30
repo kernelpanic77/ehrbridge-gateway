@@ -27,8 +27,13 @@ public class HospitalController {
     private HospitalService hospitalService;
 
     @GetMapping("/fetch-all")
-    public ResponseEntity<PatientServerHospitalsResponse> fetchAllHospitals(@RequestParam String ehrbID){
+    public ResponseEntity<PatientServerHospitalsResponse> fetchHospitalById(@RequestParam String ehrbID){
         return hospitalService.fetchHospitals(ehrbID);
+    }
+
+    @GetMapping("/fetch-all-hospitals")
+    public ResponseEntity<FetchAllHospitalResponse> fetchAllHospitals(){
+        return hospitalService.fetchAllHospitals();
     }
     
     @GetMapping("/fetch")

@@ -3,6 +3,7 @@ package com.ehrbridge.gateway.service;
 import java.util.List;
 import java.util.Optional;
 
+import org.hibernate.annotations.Fetch;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -91,5 +92,17 @@ public class HospitalService {
             // TODO: handle exception
         }
         return null;
+    }
+
+    public ResponseEntity<FetchAllHospitalResponse> fetchAllHospitals() {
+        try {
+            List<Hospital> hospitals = hospitalRepository.findAll();
+            return new ResponseEntity<FetchAllHospitalResponse>(FetchAllHospitalResponse.builder().hospitals(hospitals).build(), HttpStatusCode.valueOf(200));
+
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
+
+        return new ResponseEntity<FetchAllHospitalResponse>(HttpStatusCode.valueOf(500));
     }
 }
